@@ -1,0 +1,4 @@
+body { font-family: system-ui, sans-serif; margin: 0; background: #111; color: #eee; }
+header { padding: 1rem 2rem; background: #1c1c1c; }
+main { padding: 2rem; }
+button { padding: 0.5rem 1rem; cursor: pointer; }
