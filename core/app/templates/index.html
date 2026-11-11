@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <p>Frontend and backend are up.</p>
+  <button id="check">Check backend</button>
+  <p id="result"></p>
+
+  <script>
+    document.getElementById("check").addEventListener("click", async () => {
+      const response = await fetch("/health");
+      const data = await response.json();
+      document.getElementById("result").textContent = "Backend says: " + data.status;
+    });
+  </script>
+{% endblock %}
