@@ -1,17 +1,16 @@
 import os
-import re
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.database import create_user, get_user_by_id, get_user_by_username, init_db
-from app.security import hash_password, verify_password
+from app.database import init_db
+from app.templating import templates
+from app.routers import auth
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -40,20 +39,8 @@ app.add_middleware(
 )
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
-templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
-# Restituisce l'utente della sessione, oppure None se non è loggato o non esiste più
-def get_current_user(request: Request):
-    user_id = request.session.get("user_id")
-    if user_id is None:
-        return None
-    user = get_user_by_id(user_id)
-    if user is None:
-        request.session.clear()  # l'utente non esiste più: togliamo l'id dalla sessione
-    return user
-
-# Rende la funzione usabile dentro i template
-templates.env.globals["get_current_user"] = get_current_user
+app.include_router(auth.router)
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
@@ -62,76 +49,3 @@ def index(request: Request):
 @app.get("/health")
 def health():
     return {"status": "ok"}
-
-@app.get("/register", response_class=HTMLResponse)
-def register_page(request: Request):
-    return templates.TemplateResponse(
-        request, "register.html", {"title": "Register", "error": None}
-    )
-
-@app.post("/register", response_class=HTMLResponse)
-def register(request: Request, username: str = Form(...), password: str = Form(...)):
-    username = username.strip()
-
-    # Controlli lato server (quelli del browser si possono aggirare)
-    error = None
-    if not re.fullmatch(r"[A-Za-z0-9_.-]{3,30}", username):
-        error = "Username must be 3 to 30 characters long and can only contain letters, numbers, underscores ( _ ), dots ( . ) and hyphens ( - )."
-    elif len(password) < 8:
-        error = "Password must be at least 8 characters."
-    elif len(password.encode("utf-8")) > 72:
-        # bcrypt non accetta password più lunghe di 72 byte
-        error = "Password is too long."
-
-    if error is None:
-        user_id = create_user(username, hash_password(password))
-        if user_id is None:
-            error = "Username already taken."
-
-    if error:
-        return templates.TemplateResponse(
-            request,
-            "register.html",
-            {"title": "Register", "error": error},
-            status_code=400,
-        )
-
-    # Registrazione riuscita: salviamo l'id nella sessione (utente già loggato)
-    request.session["user_id"] = user_id
-    return RedirectResponse("/", status_code=303)
-
-@app.get("/login", response_class=HTMLResponse)
-def login_page(request: Request):
-    return templates.TemplateResponse(
-        request, "login.html", {"title": "Log in", "error": None}
-    )
-
-@app.post("/login", response_class=HTMLResponse)
-def login(request: Request, username: str = Form(...), password: str = Form(...)):
-    username = username.strip()
-    user = get_user_by_username(username)
-
-    # bcrypt non accetta password oltre i 72 byte: non possono corrispondere a nessun hash
-    valid = (
-        user is not None
-        and len(password.encode("utf-8")) <= 72
-        and verify_password(password, user["password_hash"])
-    )
-
-    if not valid:
-        return templates.TemplateResponse(
-            request,
-            "login.html",
-            {"title": "Log in", "error": "Invalid username or password."},
-            status_code=401,
-        )
-
-    # Login riuscito: svuota la sessione precedente e salva l'id dell'utente
-    request.session.clear()
-    request.session["user_id"] = user["id"]
-    return RedirectResponse("/", status_code=303)
-
-@app.post("/logout")
-def logout(request: Request):
-    request.session.clear()  # cancella i dati della sessione, l'utente risulta scollegato
-    return RedirectResponse("/", status_code=303)
