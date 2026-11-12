@@ -27,8 +27,8 @@ CREATE TABLE IF NOT EXISTS watchlists (
 );
 """
 
+# Crea le tabelle se non esistono già
 def init_db() -> None:
-    """Crea le tabelle se non esistono già."""
     conn = get_connection()
     conn.executescript(SCHEMA)
     conn.close()
