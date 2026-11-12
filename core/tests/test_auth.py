@@ -10,6 +10,7 @@ def register(client, username=USERNAME, password=PASSWORD):
         follow_redirects=False,
     )
 
+# Manda il form di login, senza seguire il redirect
 def login(client, username=USERNAME, password=PASSWORD):
     return client.post(
         "/login",
@@ -17,35 +18,41 @@ def login(client, username=USERNAME, password=PASSWORD):
         follow_redirects=False,
     )
 
+# Registrazione corretta: redirect (303) e utente già loggato
 def test_register_ok(client):
     response = register(client)
     assert response.status_code == 303
-    # dopo la registrazione l'utente è già loggato
+    # il pulsante "Log out" compare solo se l'utente è loggato
     assert "Log out" in client.get("/").text
 
+# Lo stesso username con maiuscole diverse conta come duplicato
 def test_register_duplicate_ignores_case(client):
     register(client)
     response = register(client, username="MARIO")
     assert response.status_code == 400
     assert "Username already taken" in response.text
 
+# Un carattere non ammesso (lo spazio) viene rifiutato
 def test_register_invalid_username(client):
     response = register(client, username="ma rio")
     assert response.status_code == 400
     assert "letters, numbers" in response.text
 
+# Una password sotto gli 8 caratteri viene rifiutata
 def test_register_short_password(client):
     response = register(client, password="short")
     assert response.status_code == 400
     assert "at least 8 characters" in response.text
 
+# Registrazione, logout e poi login: il login non distingue le maiuscole
 def test_login_ok(client):
     register(client)
     client.post("/logout")
-    response = login(client, username="MARIO")  # il login non distingue le maiuscole
+    response = login(client, username="MARIO")
     assert response.status_code == 303
     assert "Log out" in client.get("/").text
 
+# Password sbagliata: errore 401 e messaggio generico
 def test_login_wrong_password(client):
     register(client)
     client.post("/logout")
@@ -53,6 +60,7 @@ def test_login_wrong_password(client):
     assert response.status_code == 401
     assert "Invalid username or password" in response.text
 
+# Dopo il logout l'utente risulta scollegato
 def test_logout(client):
     register(client)
     client.post("/logout")
