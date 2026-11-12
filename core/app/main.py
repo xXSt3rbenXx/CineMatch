@@ -1,36 +1,53 @@
+import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from contextlib import asynccontextmanager
+from starlette.middleware.sessions import SessionMiddleware
+
 from app.database import init_db
 
-# Cartella in cui si trova questo file (core/app), indipendente da dove lanci uvicorn
 BASE_DIR = Path(__file__).resolve().parent
+
+# Legge core/.env e carica le variabili nell'ambiente
+load_dotenv(BASE_DIR.parent / ".env")
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    # Meglio fermarsi subito che avviare un'app con sessioni non sicure
+    raise RuntimeError("SECRET_KEY mancante: crea il file core/.env")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()  # eseguito una volta all'avvio del server
     yield
 
+
 app = FastAPI(title="CineMatch Core", lifespan=lifespan)
 
-# Rende accessibile la cartella static/ all'indirizzo /static/... (CSS, immagini)
-app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+# Cookie di sessione firmato con la chiave segreta.
+# same_site="lax" limita l'invio del cookie da siti esterni.
+# https_only=False perché in locale usiamo http (da attivare con HTTPS in produzione).
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=SECRET_KEY,
+    same_site="lax",
+    https_only=False,
+)
 
-# Dice a Jinja2 dove cercare i file HTML da riempire con i dati
+app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
-# Decoratore: "quando arriva un GET su / esegui la funzione qui sotto"
+
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
-    # Carica index.html e sostituisce {{ title }} col valore del dizionario
     return templates.TemplateResponse(request, "index.html", {"title": "CineMatch"})
 
 
 @app.get("/health")
 def health():
-    # Un dict Python viene convertito automaticamente in JSON da FastAPI
     return {"status": "ok"}
