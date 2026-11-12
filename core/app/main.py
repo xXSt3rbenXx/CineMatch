@@ -9,8 +9,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.database import create_user, init_db
-from app.security import hash_password
+from app.database import create_user, get_user_by_username, init_db
+from app.security import hash_password, verify_password
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -84,4 +84,35 @@ def register(request: Request, username: str = Form(...), password: str = Form(.
 
     # Registrazione riuscita: salviamo l'id nella sessione (utente già loggato)
     request.session["user_id"] = user_id
+    return RedirectResponse("/", status_code=303)
+
+@app.get("/login", response_class=HTMLResponse)
+def login_page(request: Request):
+    return templates.TemplateResponse(
+        request, "login.html", {"title": "Log in", "error": None}
+    )
+
+@app.post("/login", response_class=HTMLResponse)
+def login(request: Request, username: str = Form(...), password: str = Form(...)):
+    username = username.strip()
+    user = get_user_by_username(username)
+
+    # bcrypt non accetta password oltre i 72 byte: non possono corrispondere a nessun hash
+    valid = (
+        user is not None
+        and len(password.encode("utf-8")) <= 72
+        and verify_password(password, user["password_hash"])
+    )
+
+    if not valid:
+        return templates.TemplateResponse(
+            request,
+            "login.html",
+            {"title": "Log in", "error": "Invalid username or password."},
+            status_code=401,
+        )
+
+    # Login riuscito: svuota la sessione precedente e salva l'id dell'utente
+    request.session.clear()
+    request.session["user_id"] = user["id"]
     return RedirectResponse("/", status_code=303)
