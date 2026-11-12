@@ -1,15 +1,10 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <p>Frontend and backend are up.</p>
-  <button id="check">Check backend</button>
-  <p id="result"></p>
-
-  <script>
-    document.getElementById("check").addEventListener("click", async () => {
-      const response = await fetch("/health");
-      const data = await response.json();
-      document.getElementById("result").textContent = "Backend says: " + data.status;
-    });
-  </script>
+  {% set user = get_current_user(request) %}
+  {% if user %}
+    <p>Welcome, {{ user["username"] }}.</p>
+  {% else %}
+    <p>Welcome to CineMatch. <a href="/login">Log in</a> or <a href="/register">register</a> to save your own watchlist.</p>
+  {% endif %}
 {% endblock %}

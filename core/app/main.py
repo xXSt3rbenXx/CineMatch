@@ -17,9 +17,13 @@ BASE_DIR = Path(__file__).resolve().parent
 # Legge core/.env e carica le variabili nell'ambiente
 load_dotenv(BASE_DIR.parent / ".env")
 SECRET_KEY = os.getenv("SECRET_KEY")
-if not SECRET_KEY:
+
+if not SECRET_KEY or len(SECRET_KEY) < 32:
     # Meglio fermarsi subito che avviare un'app con sessioni non sicure
-    raise RuntimeError("SECRET_KEY mancante: crea il file core/.env")
+    raise RuntimeError("SECRET_KEY mancante o troppo corta (minimo 32 caratteri): crea il file core/.env")
+
+# In locale usiamo http; con HTTPS metti COOKIE_SECURE=true nel .env
+COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -30,12 +34,12 @@ app = FastAPI(title="CineMatch Core", lifespan=lifespan)
 
 # Cookie di sessione firmato con la chiave segreta.
 # same_site="lax" limita l'invio del cookie da siti esterni.
-# https_only=False perché in locale usiamo http (da attivare con HTTPS in produzione).
+# https_only si attiva con COOKIE_SECURE=true nel .env (serve HTTPS).
 app.add_middleware(
     SessionMiddleware,
     secret_key=SECRET_KEY,
     same_site="lax",
-    https_only=False,
+    https_only=COOKIE_SECURE,
 )
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
