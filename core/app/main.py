@@ -1,4 +1,5 @@
 import os
+import re
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -61,8 +62,8 @@ def register(request: Request, username: str = Form(...), password: str = Form(.
 
     # Controlli lato server (quelli del browser si possono aggirare)
     error = None
-    if not 3 <= len(username) <= 30:
-        error = "Username must be between 3 and 30 characters."
+    if not re.fullmatch(r"[A-Za-z0-9_.-]{3,30}", username):
+        error = "Username must be 3 to 30 characters long and can only contain letters, numbers, underscores ( _ ), dots ( . ) and hyphens ( - )."
     elif len(password) < 8:
         error = "Password must be at least 8 characters."
     elif len(password.encode("utf-8")) > 72:
