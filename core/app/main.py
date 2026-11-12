@@ -4,11 +4,18 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from contextlib import asynccontextmanager
+from app.database import init_db
 
 # Cartella in cui si trova questo file (core/app), indipendente da dove lanci uvicorn
 BASE_DIR = Path(__file__).resolve().parent
 
-app = FastAPI(title="CineMatch Core")  # è la variabile cercata da "uvicorn app.main:app"
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()  # eseguito una volta all'avvio del server
+    yield
+
+app = FastAPI(title="CineMatch Core", lifespan=lifespan)
 
 # Rende accessibile la cartella static/ all'indirizzo /static/... (CSS, immagini)
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
