@@ -7,7 +7,19 @@
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <header><h1>CineMatch</h1></header>
+  <header>
+    <h1><a href="/">CineMatch</a></h1>
+    <nav>
+      {% if request.session.get("user_id") %}
+        <form method="post" action="/logout">
+          <button type="submit">Log out</button>
+        </form>
+      {% else %}
+        <a href="/login">Log in</a>
+        <a href="/register">Register</a>
+      {% endif %}
+    </nav>
+  </header>
   <main>
     {% block content %}{% endblock %}
   </main>

@@ -116,3 +116,8 @@ def login(request: Request, username: str = Form(...), password: str = Form(...)
     request.session.clear()
     request.session["user_id"] = user["id"]
     return RedirectResponse("/", status_code=303)
+
+@app.post("/logout")
+def logout(request: Request):
+    request.session.clear()  # cancella i dati della sessione, l'utente risulta scollegato
+    return RedirectResponse("/", status_code=303)
