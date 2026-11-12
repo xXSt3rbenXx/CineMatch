@@ -49,6 +49,16 @@ def create_user(username: str, password_hash: str) -> int | None:
     finally:
         conn.close()
 
+# Cerca un utente per id; restituisce la riga oppure None
+def get_user_by_id(user_id: int) -> sqlite3.Row | None:
+    conn = get_connection()
+    try:
+        return conn.execute(
+            "SELECT id, username FROM users WHERE id = ?",
+            (user_id,),
+        ).fetchone()
+    finally:
+        conn.close()
 
 # Cerca un utente per username; restituisce la riga oppure None
 def get_user_by_username(username: str) -> sqlite3.Row | None:

@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.database import create_user, get_user_by_username, init_db
+from app.database import create_user, get_user_by_id, get_user_by_username, init_db
 from app.security import hash_password, verify_password
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -41,6 +41,19 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
+
+# Restituisce l'utente della sessione, oppure None se non è loggato o non esiste più
+def get_current_user(request: Request):
+    user_id = request.session.get("user_id")
+    if user_id is None:
+        return None
+    user = get_user_by_id(user_id)
+    if user is None:
+        request.session.clear()  # l'utente non esiste più: togliamo l'id dalla sessione
+    return user
+
+# Rende la funzione usabile dentro i template
+templates.env.globals["get_current_user"] = get_current_user
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):

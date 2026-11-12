@@ -10,7 +10,7 @@
   <header>
     <h1><a href="/">CineMatch</a></h1>
     <nav>
-      {% if request.session.get("user_id") %}
+      {% if get_current_user(request) %}
         <form method="post" action="/logout">
           <button type="submit">Log out</button>
         </form>
