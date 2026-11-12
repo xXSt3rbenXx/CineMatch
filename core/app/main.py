@@ -3,13 +3,14 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Form, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.database import init_db
+from app.database import create_user, init_db
+from app.security import hash_password
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -20,12 +21,10 @@ if not SECRET_KEY:
     # Meglio fermarsi subito che avviare un'app con sessioni non sicure
     raise RuntimeError("SECRET_KEY mancante: crea il file core/.env")
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()  # eseguito una volta all'avvio del server
     yield
-
 
 app = FastAPI(title="CineMatch Core", lifespan=lifespan)
 
@@ -42,12 +41,47 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
-
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
     return templates.TemplateResponse(request, "index.html", {"title": "CineMatch"})
 
-
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+@app.get("/register", response_class=HTMLResponse)
+def register_page(request: Request):
+    return templates.TemplateResponse(
+        request, "register.html", {"title": "Register", "error": None}
+    )
+
+@app.post("/register", response_class=HTMLResponse)
+def register(request: Request, username: str = Form(...), password: str = Form(...)):
+    username = username.strip()
+
+    # Controlli lato server (quelli del browser si possono aggirare)
+    error = None
+    if not 3 <= len(username) <= 30:
+        error = "Username must be between 3 and 30 characters."
+    elif len(password) < 8:
+        error = "Password must be at least 8 characters."
+    elif len(password.encode("utf-8")) > 72:
+        # bcrypt non accetta password più lunghe di 72 byte
+        error = "Password is too long."
+
+    if error is None:
+        user_id = create_user(username, hash_password(password))
+        if user_id is None:
+            error = "Username already taken."
+
+    if error:
+        return templates.TemplateResponse(
+            request,
+            "register.html",
+            {"title": "Register", "error": error},
+            status_code=400,
+        )
+
+    # Registrazione riuscita: salviamo l'id nella sessione (utente già loggato)
+    request.session["user_id"] = user_id
+    return RedirectResponse("/", status_code=303)
