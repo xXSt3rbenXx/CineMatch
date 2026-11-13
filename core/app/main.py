@@ -1,16 +1,15 @@
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
-
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.database import init_db
-from app.templating import templates
-from app.routers import auth, movies
+from app.database import get_watchlist_ids, init_db
+from app.templating import get_current_user, templates
+from app.routers import auth, movies, watchlist
 from app.catalog import get_movie, load_catalog
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -48,15 +47,19 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 app.include_router(auth.router)
 app.include_router(movies.router)
+app.include_router(watchlist.router)
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request, movie: int | None = None):
     # movie è l'id del film scelto dai suggerimenti (None se non è stato scelto nulla)
     selected = get_movie(movie) if movie is not None else None
+    # Id dei film salvati, per disegnare il cuore pieno o vuoto (None se l'utente non è loggato)
+    user = get_current_user(request)
+    saved_ids = set(get_watchlist_ids(user["id"])) if user else None
     return templates.TemplateResponse(
         request,
         "index.html",
-        {"title": "CineMatch", "movie": selected, "movie_id": movie},
+        {"title": "CineMatch", "movie": selected, "movie_id": movie, "saved_ids": saved_ids},
     )
 
 @app.get("/health")

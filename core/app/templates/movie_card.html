@@ -3,10 +3,32 @@
   <summary>
     <strong>{{ movie.title }}</strong>
     ({{ movie.year }}) · {{ movie.runtime }} min · {{ movie.genres | join(", ") }}
+    
+    {# Cuore: solo per chi ha fatto login. Pieno = salvato, vuoto = da salvare #}
+    {% if saved_ids is not none %}
+      {# Dopo il clic si torna a questa stessa pagina #}
+      {% set next_url = request.url.path ~ ("?" ~ request.url.query if request.url.query else "") %}
+      
+      {% if movie.id in saved_ids %}
+        <form method="post" action="/watchlist/remove" class="heart-form">
+          <input type="hidden" name="movie_id" value="{{ movie.id }}">
+          <input type="hidden" name="next_url" value="{{ next_url }}">
+          <button type="submit" class="heart" title="Remove from watchlist" aria-label="Remove from watchlist">♥</button>
+        </form>
+      {% else %}
+        <form method="post" action="/watchlist/add" class="heart-form">
+          <input type="hidden" name="movie_id" value="{{ movie.id }}">
+          <input type="hidden" name="next_url" value="{{ next_url }}">
+          <button type="submit" class="heart" title="Add to watchlist" aria-label="Add to watchlist">♡</button>
+        </form>
+      {% endif %}
+    {% endif %}
   </summary>
+
   {% if movie.director %}
     <p>Director: {{ movie.director }}</p>
   {% endif %}
+
   <p>{{ movie.overview }}</p>
   <p>Rating: {{ movie.vote_average }}/10 ({{ movie.vote_count }} votes)</p>
   <p><a href="https://www.themoviedb.org/movie/{{ movie.id }}" target="_blank" rel="noopener">View on TMDB</a></p>

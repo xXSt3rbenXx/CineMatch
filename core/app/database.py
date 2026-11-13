@@ -69,4 +69,55 @@ def get_user_by_username(username: str) -> sqlite3.Row | None:
             (username,),
         ).fetchone()
     finally:
+        conn.close() 
+
+# Aggiunge un film alla watchlist dell'utente (se c'è già, non fa nulla)
+def add_to_watchlist(user_id: int, movie_id: int) -> None:
+    conn = get_connection()
+    try:
+        conn.execute(
+            "INSERT OR IGNORE INTO watchlists (user_id, movie_id) VALUES (?, ?)",
+            (user_id, movie_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+# Toglie un film dalla watchlist dell'utente (se non c'è, non fa nulla)
+def remove_from_watchlist(user_id: int, movie_id: int) -> None:
+    conn = get_connection()
+    try:
+        conn.execute(
+            "DELETE FROM watchlists WHERE user_id = ? AND movie_id = ?",
+            (user_id, movie_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+# Dice se un film è già nella watchlist dell'utente
+def is_in_watchlist(user_id: int, movie_id: int) -> bool:
+    conn = get_connection()
+    try:
+        row = conn.execute(
+            "SELECT 1 FROM watchlists WHERE user_id = ? AND movie_id = ?",
+            (user_id, movie_id),
+        ).fetchone()
+        return row is not None
+    finally:
+        conn.close()
+
+
+# Restituisce gli id dei film salvati dall'utente, dal più recente al più vecchio
+def get_watchlist_ids(user_id: int) -> list[int]:
+    conn = get_connection()
+    try:
+        rows = conn.execute(
+            "SELECT movie_id FROM watchlists WHERE user_id = ? ORDER BY rowid DESC",
+            (user_id,),
+        ).fetchall()
+        return [row["movie_id"] for row in rows]
+    finally:
         conn.close()
