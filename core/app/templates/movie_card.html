@@ -4,24 +4,42 @@
     <strong>{{ movie.title }}</strong>
     ({{ movie.year }}) · {{ movie.runtime }} min · {{ movie.genres | join(", ") }}
     
-    {# Cuore: solo per chi ha fatto login. Pieno = salvato, vuoto = da salvare #}
+    {# Azioni a destra della scheda: solo per chi ha fatto login #}
     {% if saved_ids is not none %}
       {# Dopo il clic si torna a questa stessa pagina #}
       {% set next_url = request.url.path ~ ("?" ~ request.url.query if request.url.query else "") %}
-      
-      {% if movie.id in saved_ids %}
-        <form method="post" action="/watchlist/remove" class="heart-form">
-          <input type="hidden" name="movie_id" value="{{ movie.id }}">
-          <input type="hidden" name="next_url" value="{{ next_url }}">
-          <button type="submit" class="heart" title="Remove from watchlist" aria-label="Remove from watchlist">♥</button>
-        </form>
-      {% else %}
-        <form method="post" action="/watchlist/add" class="heart-form">
-          <input type="hidden" name="movie_id" value="{{ movie.id }}">
-          <input type="hidden" name="next_url" value="{{ next_url }}">
-          <button type="submit" class="heart" title="Add to watchlist" aria-label="Add to watchlist">♡</button>
-        </form>
-      {% endif %}
+      <span class="card-actions">
+
+        {# ✓ "visto": solo nella pagina della watchlist. Verde = visto, grigio = da vedere #}
+        {% if watched_ids is defined %}
+          {% set is_watched = movie.id in watched_ids %}
+          <form method="post" action="/watchlist/watched" class="check-form">
+            <input type="hidden" name="movie_id" value="{{ movie.id }}">
+            {# Il valore da impostare al clic: il contrario dello stato attuale #}
+            <input type="hidden" name="watched" value="{{ 0 if is_watched else 1 }}">
+            <input type="hidden" name="next_url" value="{{ next_url }}">
+            <button type="submit" class="check{{ ' watched' if is_watched else '' }}"
+                    title="{{ 'Mark as not watched' if is_watched else 'Mark as watched' }}"
+                    aria-label="{{ 'Mark as not watched' if is_watched else 'Mark as watched' }}">✓</button>
+          </form>
+        {% endif %}
+
+        {# Cuore. Pieno = salvato (cliccando chiede conferma e lo toglie), vuoto = da salvare #}
+        {% if movie.id in saved_ids %}
+          <form method="post" action="/watchlist/remove" class="heart-form">
+            <input type="hidden" name="movie_id" value="{{ movie.id }}">
+            <input type="hidden" name="next_url" value="{{ next_url }}">
+            <button type="submit" class="heart" title="Remove from watchlist" aria-label="Remove from watchlist">♥</button>
+          </form>
+        {% else %}
+          <form method="post" action="/watchlist/add" class="heart-form">
+            <input type="hidden" name="movie_id" value="{{ movie.id }}">
+            <input type="hidden" name="next_url" value="{{ next_url }}">
+            <button type="submit" class="heart" title="Add to watchlist" aria-label="Add to watchlist">♡</button>
+          </form>
+        {% endif %}
+
+      </span>
     {% endif %}
   </summary>
 

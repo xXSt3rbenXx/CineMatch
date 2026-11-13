@@ -4,7 +4,6 @@ from pathlib import Path
 # Il database sarà il file core/data/cinematch.db (i file *.db sono già ignorati da git)
 DB_PATH = Path(__file__).resolve().parent.parent / "data" / "cinematch.db"
 
-
 def get_connection() -> sqlite3.Connection:
     DB_PATH.parent.mkdir(exist_ok=True)  # crea la cartella data/ se non esiste
     conn = sqlite3.connect(DB_PATH)  # se il file non esiste SQLite lo crea
@@ -22,6 +21,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS watchlists (
     user_id INTEGER NOT NULL,
     movie_id INTEGER NOT NULL,
+    watched INTEGER NOT NULL DEFAULT 0,  -- 0 = da vedere, 1 = già visto
     PRIMARY KEY (user_id, movie_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -83,7 +83,6 @@ def add_to_watchlist(user_id: int, movie_id: int) -> None:
     finally:
         conn.close()
 
-
 # Toglie un film dalla watchlist dell'utente (se non c'è, non fa nulla)
 def remove_from_watchlist(user_id: int, movie_id: int) -> None:
     conn = get_connection()
@@ -95,7 +94,6 @@ def remove_from_watchlist(user_id: int, movie_id: int) -> None:
         conn.commit()
     finally:
         conn.close()
-
 
 # Dice se un film è già nella watchlist dell'utente
 def is_in_watchlist(user_id: int, movie_id: int) -> bool:
@@ -109,7 +107,6 @@ def is_in_watchlist(user_id: int, movie_id: int) -> bool:
     finally:
         conn.close()
 
-
 # Restituisce gli id dei film salvati dall'utente, dal più recente al più vecchio
 def get_watchlist_ids(user_id: int) -> list[int]:
     conn = get_connection()
@@ -121,3 +118,27 @@ def get_watchlist_ids(user_id: int) -> list[int]:
         return [row["movie_id"] for row in rows]
     finally:
         conn.close()
+
+# Segna un film della watchlist come visto (True) o da vedere (False)
+def set_watched(user_id: int, movie_id: int, watched: bool) -> None:
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE watchlists SET watched = ? WHERE user_id = ? AND movie_id = ?",
+            (int(watched), user_id, movie_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+# Film salvati dall'utente con il loro stato (visto o no), dal più recente al più vecchio
+def get_watchlist(user_id: int) -> list[sqlite3.Row]:
+    conn = get_connection()
+    try:
+        return conn.execute(
+            "SELECT movie_id, watched FROM watchlists WHERE user_id = ? ORDER BY rowid DESC",
+            (user_id,),
+        ).fetchall()
+    finally:
+        conn.close()
+

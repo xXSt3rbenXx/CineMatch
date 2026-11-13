@@ -11,7 +11,8 @@
 
 <body>
   <header>
-    <h1><a href="/">CineMatch</a></h1>
+    {# Ogni pagina può aggiungere un sottotitolo accanto a "CineMatch" (es. la watchlist) #}
+    <h1><a href="/">CineMatch</a>{% block header_title %}{% endblock %}</h1>
     <nav>
       {% set user = get_current_user(request) %}
       {% if user %}
@@ -27,12 +28,17 @@
 
           {# Contenuto della tendina: qui andrà anche il link alla watchlist #}
           <div class="profile-dropdown">
-            <p class="profile-name">{{ user["username"] }}</p>
-            <form method="post" action="/logout">
-              <button type="submit">Log out</button>
-            </form>
+            <p class="profile-name">{{ user["username"] }}'s menu:</p>
+            <ul class="profile-items">
+              <li><a href="/watchlist">My Watchlist</a></li>
+              <li>
+                {# Il logout resta un POST (come da documento), ma ha l'aspetto di una voce del menu #}
+                <form method="post" action="/logout">
+                  <button type="submit">Logout</button>
+                </form>
+              </li>
+            </ul>
           </div>
-        </details>
 
       {% else %}
         <a href="/login">Log in</a>

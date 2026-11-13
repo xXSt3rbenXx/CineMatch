@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block header_title %} - {{ get_current_user(request)["username"] }}'s Watchlist{% endblock %}
+
+{% block content %}
+
+  {# Contatore: gli span con id servono al JavaScript per aggiornare i numeri senza ricaricare #}
+  {% if total %}
+    <p class="watchlist-count">
+      Movies: <span id="count-total">{{ total }}</span> · Watched: <span id="count-watched">{{ watched_count }}</span>
+    </p>
+  {% endif %}
+
+  {# Filtri e ordinamento (solo se la watchlist non è vuota): ogni scelta ricarica la pagina con ?genre=...&decade=... #}
+  {% if total %}
+    <form method="get" action="/watchlist" class="filters">
+
+      <select id="sort" name="sort" aria-label="Sort by" onchange="this.form.submit()">
+        {% for value, label in sort_options.items() %}
+          <option value="{{ value }}" {% if value == sort %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+
+      <select id="status" name="status" aria-label="Watched status" onchange="this.form.submit()">
+        <option value="">Watched or not</option>
+        {% for value, label in status_options.items() %}
+          <option value="{{ value }}" {% if value == status %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+
+      <select id="genre" name="genre" aria-label="Genre" onchange="this.form.submit()">
+        <option value="">All genres</option>
+        {% for g in genres %}
+          <option value="{{ g }}" {% if g == genre %}selected{% endif %}>{{ g }}</option>
+        {% endfor %}
+      </select>
+
+      <select id="decade" name="decade" aria-label="Decade" onchange="this.form.submit()">
+        <option value="">Any decade</option>
+        {% for d in decades %}
+          <option value="{{ d }}" {% if d|string == decade %}selected{% endif %}>{{ d }}s</option>
+        {% endfor %}
+      </select>
+
+      <select id="runtime" name="runtime" aria-label="Runtime" onchange="this.form.submit()">
+        <option value="">Any runtime</option>
+        {% for value, label in runtime_options.items() %}
+          <option value="{{ value }}" {% if value == runtime %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+
+      {# Senza JavaScript il filtro si applica con questo pulsante #}
+      <noscript><button type="submit">Filter</button></noscript>
+    </form>
+  {% endif %}
+
+  {# Le schede dei film salvati, dal più recente #}
+  {% if movies %}
+    {# Il JavaScript del cuore riconosce questo contenitore e qui toglie subito le schede #}
+    <div class="watchlist-list" data-status="{{ status }}">
+      {% for movie in movies %}
+        {% include "movie_card.html" %}
+      {% endfor %}
+    </div>
+
+  {% elif not genres %}
+    <p>Your watchlist is empty. <a href="/">Search a movie</a> and click ♡ to save it.</p>
+  {% else %}
+    <p>No saved movies match these filters. <a href="/watchlist">Clear filters</a></p>
+  {% endif %}
+
+{% endblock %}

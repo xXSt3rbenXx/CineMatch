@@ -8,6 +8,9 @@
   {% endif %}
 
   <form method="post" action="/login">
+    {# Pagina dove tornare dopo il login #}
+    <input type="hidden" name="next_url" value="{{ next_url }}">
+
     <label for="username">Username</label>
     <input type="text" id="username" name="username" required>
 

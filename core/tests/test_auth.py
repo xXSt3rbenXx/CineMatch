@@ -22,8 +22,8 @@ def login(client, username=USERNAME, password=PASSWORD):
 def test_register_ok(client):
     response = register(client)
     assert response.status_code == 303
-    # il pulsante "Log out" compare solo se l'utente è loggato
-    assert "Log out" in client.get("/").text
+    # il pulsante "Logout" compare solo se l'utente è loggato
+    assert "Logout" in client.get("/").text
 
 # Lo stesso username con maiuscole diverse conta come duplicato
 def test_register_duplicate_ignores_case(client):
@@ -50,7 +50,7 @@ def test_login_ok(client):
     client.post("/logout")
     response = login(client, username="MARIO")
     assert response.status_code == 303
-    assert "Log out" in client.get("/").text
+    assert "Logout" in client.get("/").text
 
 # Password sbagliata: errore 401 e messaggio generico
 def test_login_wrong_password(client):
@@ -65,3 +65,25 @@ def test_logout(client):
     register(client)
     client.post("/logout")
     assert "Log out" not in client.get("/").text
+
+# Dopo il login si torna alla pagina indicata (es. la watchlist)
+def test_login_redirects_to_next_url(client):
+    register(client)
+    client.post("/logout")
+    response = client.post(
+        "/login",
+        data={"username": USERNAME, "password": PASSWORD, "next_url": "/watchlist"},
+        follow_redirects=False,
+    )
+    assert response.headers["location"] == "/watchlist"
+
+# Un indirizzo esterno come pagina di ritorno viene ignorato: si va alla home
+def test_login_blocks_external_next_url(client):
+    register(client)
+    client.post("/logout")
+    response = client.post(
+        "/login",
+        data={"username": USERNAME, "password": PASSWORD, "next_url": "//evil.com"},
+        follow_redirects=False,
+    )
+    assert response.headers["location"] == "/"

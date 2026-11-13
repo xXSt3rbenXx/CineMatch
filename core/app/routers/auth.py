@@ -4,7 +4,7 @@ from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from app.database import create_user, get_user_by_username
-from app.security import hash_password, verify_password
+from app.security import hash_password, safe_next, verify_password
 from app.templating import templates
 
 router = APIRouter()
@@ -47,13 +47,21 @@ def register(request: Request, username: str = Form(...), password: str = Form(.
     return RedirectResponse("/", status_code=303)
 
 @router.get("/login", response_class=HTMLResponse)
-def login_page(request: Request):
+def login_page(request: Request, next_url: str = "/"):
+    # next_url: la pagina dove tornare dopo il login (es. /login?next_url=/watchlist)
     return templates.TemplateResponse(
-        request, "login.html", {"title": "Log in", "error": None}
+        request,
+        "login.html",
+        {"title": "Log in", "error": None, "next_url": safe_next(next_url)},
     )
 
 @router.post("/login", response_class=HTMLResponse)
-def login(request: Request, username: str = Form(...), password: str = Form(...)):
+def login(
+    request: Request,
+    username: str = Form(...),
+    password: str = Form(...),
+    next_url: str = Form("/"),
+):
     username = username.strip()
     user = get_user_by_username(username)
 
@@ -68,14 +76,14 @@ def login(request: Request, username: str = Form(...), password: str = Form(...)
         return templates.TemplateResponse(
             request,
             "login.html",
-            {"title": "Log in", "error": "Invalid username or password."},
+            {"title": "Log in", "error": "Invalid username or password.", "next_url": safe_next(next_url)},
             status_code=401,
         )
 
     # Login riuscito: svuota la sessione precedente e salva l'id dell'utente
     request.session.clear()
     request.session["user_id"] = user["id"]
-    return RedirectResponse("/", status_code=303)
+    return RedirectResponse(safe_next(next_url), status_code=303)
 
 @router.post("/logout")
 def logout(request: Request):
