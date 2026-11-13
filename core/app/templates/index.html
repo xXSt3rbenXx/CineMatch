@@ -7,4 +7,55 @@
   {% else %}
     <p>Welcome to CineMatch. <a href="/login">Log in</a> or <a href="/register">register</a> to save your own watchlist.</p>
   {% endif %}
+
+  {# Casella di ricerca: mentre scrivi compaiono i suggerimenti, cliccandone uno si apre la scheda #}
+  {# Se è stato scelto un film, la casella mostra il suo titolo al posto del testo cercato #}
+    <div class="search">
+    <input type="text" id="search" placeholder="Search a movie by title" autocomplete="off"
+           value="{{ movie.title if movie else '' }}">
+    {% if movie %}
+      {# La X riporta alla home vuota, pronta per una nuova ricerca #}
+      <a href="/" class="clear" title="Clear">✕</a>
+    {% endif %}
+    <ul id="suggestions"></ul>
+  </div>
+
+  <script>
+    const input = document.getElementById("search");
+    const list = document.getElementById("suggestions");
+    let timer;
+
+    // Aspetta che l'utente smetta di scrivere per 250 ms, poi chiede i suggerimenti
+    input.addEventListener("input", () => {
+      clearTimeout(timer);
+      timer = setTimeout(showSuggestions, 250);
+    });
+
+    async function showSuggestions() {
+      const query = input.value.trim();
+      const response = await fetch("/api/search?q=" + encodeURIComponent(query));
+      const movies = await response.json();
+
+      // Se nel frattempo l'utente ha cambiato testo, questa risposta è vecchia: la ignoriamo
+      if (input.value.trim() !== query) return;
+
+      list.innerHTML = "";  // svuota i suggerimenti precedenti
+      for (const movie of movies) {
+        const link = document.createElement("a");
+        link.href = "/?movie=" + movie.id;
+        // textContent mostra il titolo come semplice testo, mai come HTML
+        link.textContent = movie.title + " (" + movie.year + ")";
+        const item = document.createElement("li");
+        item.appendChild(link);
+        list.appendChild(item);
+      }
+    }
+  </script>
+
+  {# Scheda del film selezionato #}
+  {% if movie %}
+    {% include "movie_card.html" %}
+  {% elif movie_id %}
+    <p>Movie not found.</p>
+  {% endif %}
 {% endblock %}

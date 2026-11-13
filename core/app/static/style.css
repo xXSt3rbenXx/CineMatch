@@ -13,3 +13,20 @@ header h1 a { color: inherit; text-decoration: none; }
 nav { display: flex; align-items: center; gap: 1rem; }
 nav a { color: #eee; }
 nav form { max-width: none; }
+
+/* Casella di ricerca: i suggerimenti compaiono sovrapposti sotto, stile Google */
+.search { position: relative; max-width: 480px; margin: 1.5rem 0; }
+.search input { width: 100%; box-sizing: border-box; padding-right: 2rem; }
+.search .clear { position: absolute; right: 0.6rem; top: 50%; transform: translateY(-50%); color: #aaa; text-decoration: none; }
+#suggestions { position: absolute; top: 100%; left: 0; right: 0; z-index: 10; margin: 0; padding: 0; list-style: none; background: #1c1c1c; border: 1px solid #444; border-top: none; border-radius: 0 0 4px 4px; }
+#suggestions:empty { display: none; }
+#suggestions a { display: block; padding: 0.5rem; color: #eee; text-decoration: none; }
+#suggestions a:hover { background: #333; }
+
+/* Menu del profilo: un'icona tonda, la tendina piccola si apre sotto, allineata a destra */
+.profile-menu { position: relative; }
+.profile-menu summary { cursor: pointer; list-style: none; display: flex; padding: 0.35rem; border: 1px solid #444; border-radius: 50%; }
+.profile-menu summary::-webkit-details-marker { display: none; }
+.profile-dropdown { position: absolute; right: 0; top: calc(100% + 0.4rem); z-index: 20; min-width: 110px; padding: 0.4rem; background: #1c1c1c; border: 1px solid #444; border-radius: 4px; }
+.profile-name { margin: 0 0 0.4rem; font-size: 0.85rem; color: #aaa; }
+.profile-dropdown button { width: 100%; padding: 0.3rem 0.6rem; font-size: 0.85rem; }

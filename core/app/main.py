@@ -10,7 +10,8 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.database import init_db
 from app.templating import templates
-from app.routers import auth
+from app.routers import auth, movies
+from app.catalog import get_movie, load_catalog
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -28,6 +29,7 @@ COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()  # eseguito una volta all'avvio del server
+    load_catalog()  # carica catalog.csv in memoria
     yield
 
 app = FastAPI(title="CineMatch Core", lifespan=lifespan)
@@ -45,10 +47,17 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 app.include_router(auth.router)
+app.include_router(movies.router)
 
 @app.get("/", response_class=HTMLResponse)
-def index(request: Request):
-    return templates.TemplateResponse(request, "index.html", {"title": "CineMatch"})
+def index(request: Request, movie: int | None = None):
+    # movie è l'id del film scelto dai suggerimenti (None se non è stato scelto nulla)
+    selected = get_movie(movie) if movie is not None else None
+    return templates.TemplateResponse(
+        request,
+        "index.html",
+        {"title": "CineMatch", "movie": selected, "movie_id": movie},
+    )
 
 @app.get("/health")
 def health():
