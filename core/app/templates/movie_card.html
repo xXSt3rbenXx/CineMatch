@@ -43,11 +43,22 @@
     {% endif %}
   </summary>
 
-  {% if movie.director %}
-    <p>Director: {{ movie.director }}</p>
-  {% endif %}
+  <div class="card-body">
+    {# Locandina: con loading="lazy" il browser la chiede solo quando la scheda viene aperta.
+       Se l'immagine non si carica (es. senza connessione) passa al placeholder #}
+    <img class="poster" src="/api/poster/{{ movie.id }}" alt="Poster of {{ movie.title }}"
+         loading="lazy" width="185" height="278"
+         onerror="this.onerror = null; this.src = '/static/poster-placeholder.svg'">
 
-  <p>{{ movie.overview }}</p>
-  <p>Rating: {{ movie.vote_average }}/10 ({{ movie.vote_count }} votes)</p>
-  <p><a href="https://www.themoviedb.org/movie/{{ movie.id }}" target="_blank" rel="noopener">View on TMDB</a></p>
+    <div class="card-info">
+      {% if movie.director %}
+        <p>Director: {{ movie.director }}</p>
+      {% endif %}
+
+      <p>{{ movie.overview }}</p>
+      <p>Rating: {{ movie.vote_average }}/10 ({{ movie.vote_count }} votes)</p>
+      <p><a href="https://www.themoviedb.org/movie/{{ movie.id }}" target="_blank" rel="noopener">View on TMDB</a></p>
+    </div>
+  </div>
+
 </details>

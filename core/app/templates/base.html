@@ -39,6 +39,7 @@
               </li>
             </ul>
           </div>
+         </details>
 
       {% else %}
         <a href="/login">Log in</a>
@@ -50,5 +51,12 @@
   <main>
     {% block content %}{% endblock %}
   </main>
+
+  {# Citazione richiesta dalle regole di TMDB, che ci fornisce le locandine #}
+  <footer>
+    <p>Posters provided by <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDB</a>.
+      This website uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.</p>
+  </footer>
+
 </body>
 </html>

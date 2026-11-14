@@ -58,3 +58,12 @@ nav form { max-width: none; }
 
 /* Menu a tendina con lo stesso stile della casella di ricerca */
 select { padding: 0.5rem; border: 1px solid #444; border-radius: 4px; background: #1c1c1c; color: #eee; }
+
+/* Scheda aperta: locandina a sinistra, dati a destra (su schermi stretti vanno uno sotto l'altro) */
+.card-body { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; margin-top: 0.75rem; }
+.poster { width: 185px; height: auto; flex-shrink: 0; border-radius: 4px; background: #2a2a2a; }
+.card-info { flex: 1; min-width: 200px; }
+.card-info p:first-child { margin-top: 0; }
+
+/* Footer piccolo e discreto in fondo alla pagina */
+footer { margin-top: 3rem; padding: 1rem 0; border-top: 1px solid #333; font-size: 0.8rem; color: #888; }

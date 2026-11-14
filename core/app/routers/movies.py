@@ -1,9 +1,10 @@
 from fastapi import APIRouter
+from fastapi.responses import RedirectResponse
 
-from app.catalog import search_movies
+from app.catalog import get_movie, search_movies
+from app.posters import get_poster_url
 
 router = APIRouter()
-
 
 # Suggerimenti per la casella di ricerca: pochi film, solo i dati per riconoscerli
 @router.get("/api/search")
@@ -12,3 +13,12 @@ def search_suggestions(q: str = ""):
         return []  # con una lettera sola i risultati sarebbero troppi e poco utili
     movies = search_movies(q, limit=8)
     return [{"id": m["id"], "title": m["title"], "year": m["year"]} for m in movies]
+
+# Locandina di un film: rimanda il browser all'immagine su TMDB, oppure al placeholder
+# se TMDB non risponde, il film non ha locandina o non è nel nostro catalogo
+@router.get("/api/poster/{movie_id}")
+def poster(movie_id: int):
+    url = None
+    if get_movie(movie_id) is not None:  # chiediamo a TMDB solo film del catalogo
+        url = get_poster_url(movie_id, size="w342")
+    return RedirectResponse(url or "/static/poster-placeholder.svg")
