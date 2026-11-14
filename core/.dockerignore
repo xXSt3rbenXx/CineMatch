@@ -1,0 +1,8 @@
+# Non copiare nella scatola: chiavi segrete, database, ambiente locale e test
+.env
+.venv
+data
+tests
+__pycache__
+*.pyc
+.pytest_cache

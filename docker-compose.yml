@@ -1,0 +1,15 @@
+# Avvio con: docker compose up --build   (spegnimento: Ctrl+C)
+services:
+  core:
+    build: ./core                      # la ricetta è core/Dockerfile
+    ports:
+      - "8000:8000"                    # porta del PC : porta del container
+    env_file: ./core/.env              # chiavi segrete, passate da fuori
+    volumes:
+      - ./dataset/catalog:/dataset/catalog:ro   # catalogo prestato in sola lettura
+      - cinematch-data:/app/data                # il database resta tra un avvio e l'altro
+    # Qui sotto, più avanti, andrà il servizio dell'AI
+
+volumes:
+  cinematch-data:
+    name: cinematch-data    # nome esatto, senza il prefisso "cinematch_" che Compose aggiunge da solo
