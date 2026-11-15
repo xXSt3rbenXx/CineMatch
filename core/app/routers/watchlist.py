@@ -68,6 +68,7 @@ def watchlist_page(
     runtime: str = "",
     status: str = "",
     sort: str = "recent",
+    movie: int | None = None,
 ):
     user = get_current_user(request)
     if user is None:
@@ -105,6 +106,9 @@ def watchlist_page(
     movies = apply_filters(movies, watched_ids, genre, decade, runtime, status)
     movies = sort_movies(movies, sort)
 
+    # Film scelto dalla ricerca in cima alla pagina (?movie=id), per poterlo aggiungere
+    selected = get_movie(movie) if movie is not None else None
+
     return templates.TemplateResponse(
         request,
         "watchlist.html",
@@ -125,5 +129,7 @@ def watchlist_page(
             "status_options": STATUS_OPTIONS,
             "total": total,
             "watched_count": watched_count,
+            "movie": selected,
+            "movie_id": movie,
         },
     )

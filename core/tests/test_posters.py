@@ -46,3 +46,11 @@ def test_circuit_breaker_stops_calling_tmdb(monkeypatch):
     # Circuito aperto: la richiesta dopo non arriva nemmeno a TMDB
     assert posters.get_poster_url(157336) is None
     assert len(calls) == 3
+
+# La misura grande arriva fino a TMDB; una misura sconosciuta diventa quella normale
+def test_poster_size(client, monkeypatch):
+    sizes = []
+    monkeypatch.setattr(movies, "get_poster_url", lambda movie_id, size: sizes.append(size) or FAKE_URL)
+    client.get("/api/poster/157336", params={"size": "original"}, follow_redirects=False)
+    client.get("/api/poster/157336", params={"size": "huge"}, follow_redirects=False)
+    assert sizes == ["original", "w342"]

@@ -1,17 +1,37 @@
+{% from "icons.html" import icon %}
+
 {# Scheda di un film: chiusa mostra i dati essenziali, cliccata si espande con il resto #}
 <details class="movie-card">
   <summary>
-    <strong>{{ movie.title }}</strong>
-    ({{ movie.year }}) · {{ movie.runtime }} min · {{ movie.genres | join(", ") }}
+    {# Riga 1: titolo, anno e durata #}
+    <span class="card-head">
+      <strong class="card-title">{{ movie.title }}</strong>
+      {# Anno e durata viaggiano insieme: o entrambi accanto al titolo, o entrambi a capo #}
+      <span class="card-meta">
+        <span class="meta">{{ icon("calendar") }} {{ movie.year }}</span>
+        <span class="meta">{{ icon("clock") }} {{ movie.runtime }} min</span>
+      </span>
+    </span>
+
+    {# Riga 2: tutti i generi come pillole (nel catalogo al massimo 7; se serve vanno a capo) #}
+    <span class="card-tags">
+      {% for genre in movie.genres %}
+        <span class="chip">{{ genre }}</span>
+      {% endfor %}
+    </span>
     
+    {# Invito a cliccare: il CSS scrive "Details"; da aperta la scheda si chiude dal pulsante in fondo #}
+    <span class="card-toggle" aria-hidden="true"></span>
+
     {# Azioni a destra della scheda: solo per chi ha fatto login #}
     {% if saved_ids is not none %}
       {# Dopo il clic si torna a questa stessa pagina #}
       {% set next_url = request.url.path ~ ("?" ~ request.url.query if request.url.query else "") %}
+
       <span class="card-actions">
 
         {# ✓ "visto": solo nella pagina della watchlist. Verde = visto, grigio = da vedere #}
-        {% if watched_ids is defined %}
+        {% if watched_ids is defined and movie.id in saved_ids %}
           {% set is_watched = movie.id in watched_ids %}
           <form method="post" action="/watchlist/watched" class="check-form">
             <input type="hidden" name="movie_id" value="{{ movie.id }}">
@@ -20,7 +40,7 @@
             <input type="hidden" name="next_url" value="{{ next_url }}">
             <button type="submit" class="check{{ ' watched' if is_watched else '' }}"
                     title="{{ 'Mark as not watched' if is_watched else 'Mark as watched' }}"
-                    aria-label="{{ 'Mark as not watched' if is_watched else 'Mark as watched' }}">✓</button>
+                    aria-label="{{ 'Mark as not watched' if is_watched else 'Mark as watched' }}">{{ icon("check") }}</button>
           </form>
         {% endif %}
 
@@ -29,13 +49,13 @@
           <form method="post" action="/watchlist/remove" class="heart-form">
             <input type="hidden" name="movie_id" value="{{ movie.id }}">
             <input type="hidden" name="next_url" value="{{ next_url }}">
-            <button type="submit" class="heart" title="Remove from watchlist" aria-label="Remove from watchlist">♥</button>
+            <button type="submit" class="heart saved" title="Remove from watchlist" aria-label="Remove from watchlist">{{ icon("heart") }}</button>
           </form>
         {% else %}
           <form method="post" action="/watchlist/add" class="heart-form">
             <input type="hidden" name="movie_id" value="{{ movie.id }}">
             <input type="hidden" name="next_url" value="{{ next_url }}">
-            <button type="submit" class="heart" title="Add to watchlist" aria-label="Add to watchlist">♡</button>
+            <button type="submit" class="heart" title="Add to watchlist" aria-label="Add to watchlist">{{ icon("heart") }}</button>
           </form>
         {% endif %}
 
@@ -44,20 +64,31 @@
   </summary>
 
   <div class="card-body">
+
     {# Locandina: con loading="lazy" il browser la chiede solo quando la scheda viene aperta.
        Se l'immagine non si carica (es. senza connessione) passa al placeholder #}
-    <img class="poster" src="/api/poster/{{ movie.id }}" alt="Poster of {{ movie.title }}"
-         loading="lazy" width="185" height="278"
-         onerror="this.onerror = null; this.src = '/static/poster-placeholder.svg'">
+    <img class="poster" 
+      src="/api/poster/{{ movie.id }}" 
+      alt="Poster of {{ movie.title }}" 
+      data-movie-id="{{ movie.id }}"
+      loading="lazy" width="185" height="278"
+      onerror="this.onerror = null; this.src = '/static/poster-placeholder.svg'"
+    >
 
     <div class="card-info">
       {% if movie.director %}
-        <p>Director: {{ movie.director }}</p>
+        <p class="info-row">{{ icon("director") }} <span>Directed by <strong>{{ movie.director }}</strong></span></p>
       {% endif %}
+      {# Voto con un decimale e voti con il separatore delle migliaia (13,752) #}
+      <p class="info-row">{{ icon("star") }} <span><strong>{{ "%.1f" | format(movie.vote_average) }}</strong>/10 · {{ "{:,}".format(movie.vote_count) }} votes</span></p>
 
-      <p>{{ movie.overview }}</p>
-      <p>Rating: {{ movie.vote_average }}/10 ({{ movie.vote_count }} votes)</p>
-      <p><a href="https://www.themoviedb.org/movie/{{ movie.id }}" target="_blank" rel="noopener">View on TMDB</a></p>
+      <p class="overview">{{ movie.overview }}</p>
+
+      {# In fondo: link a TMDB a sinistra, "Close" a destra #}
+      <div class="card-footer">
+        <a class="tmdb-link" href="https://www.themoviedb.org/movie/{{ movie.id }}" target="_blank" rel="noopener">{{ icon("link") }} View on TMDB</a>
+        <button type="button" class="card-close">Close</button>
+      </div>
     </div>
   </div>
 

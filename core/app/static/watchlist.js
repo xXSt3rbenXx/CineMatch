@@ -1,10 +1,34 @@
+// Messaggio temporaneo in basso ("toast"): compare, resta 2.5 secondi e sparisce
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.add("visible");
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => toast.classList.remove("visible"), 2500);
+}
+
+// Toast lasciato dalla pagina prima di ricaricarsi: lo mostriamo ora
+document.addEventListener("DOMContentLoaded", () => {
+  const message = sessionStorage.getItem("toast");
+  if (message) {
+    sessionStorage.removeItem("toast");
+    showToast(message);
+  }
+});
+
 // Fa sparire una scheda con una breve dissolvenza, poi la toglie dalla pagina
 function removeCard(card, list) {
   card.classList.add("removing");  // avvia la dissolvenza definita nel CSS
   setTimeout(() => {
     card.remove();
-    // Se non resta nessun film, ricarichiamo per mostrare il messaggio giusto
-    if (!list.querySelector(".movie-card")) window.location.reload();
+    // Se c'è una lista e non resta nessun film, ricarichiamo per mostrare il messaggio giusto
+    if (list && !list.querySelector(".movie-card")) {
+      // Se c'è un toast visibile, lo "portiamo" oltre il ricaricamento
+      const toast = document.getElementById("toast");
+      if (toast && toast.classList.contains("visible")) sessionStorage.setItem("toast", toast.textContent);
+      window.location.reload();
+    }
   }, 500);  // 500 ms: la durata della dissolvenza
 }
 
@@ -38,24 +62,37 @@ document.addEventListener("submit", async (event) => {
 
   if (!response.ok) return;
 
-  // Aggiorna il cuore: pieno se salvato, vuoto se tolto
-  const { saved } = await response.json();
+    const { saved } = await response.json();
+  const card = form.closest(".movie-card");
+  const title = card.querySelector(".card-title").textContent;
+  const message = saved ? `"${title}" added to your watchlist` : `"${title}" removed from your watchlist`;
 
-  // Nella pagina della watchlist la scheda tolta sparisce subito
-  const list = form.closest(".watchlist-list");
-  if (!saved && list) {
-    const card = form.closest(".movie-card");
-    bumpCount("count-total", -1);
-    
-    // Se il film tolto era segnato come visto, scende anche quel numero
-    if (card.querySelector(".check.watched")) bumpCount("count-watched", -1);
-    removeCard(form.closest(".movie-card"), list);
+// Cuore della scheda scelta con la ricerca della watchlist: la scheda sfuma e la pagina.
+  if (form.closest(".selected-movie[data-reload-on-save]")) {
+    sessionStorage.setItem("toast", message);
+    removeCard(card);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("movie");
+    setTimeout(() => window.location.replace(url.pathname + url.search), 500);
     return;
   }
 
+  showToast(message);
+
+  // Nella lista della watchlist la scheda tolta sparisce
+  const list = form.closest(".watchlist-list");
+  if (!saved && list) {
+    bumpCount("count-total", -1);
+    // Se il film tolto era segnato come visto, scende anche quel numero
+    if (card.querySelector(".check.watched")) bumpCount("count-watched", -1);
+    removeCard(card, list);
+    return;
+  }
+
+  // Altrove (es. home) la scheda resta: aggiorniamo solo il cuore
   const button = form.querySelector(".heart");
   form.action = saved ? "/watchlist/remove" : "/watchlist/add";
-  button.textContent = saved ? "♥" : "♡";
+  button.classList.toggle("saved", saved);  // il CSS riempie il cuore se il film è salvato
   button.title = saved ? "Remove from watchlist" : "Add to watchlist";
   button.setAttribute("aria-label", button.title);
 });
@@ -92,4 +129,45 @@ document.addEventListener("submit", async (event) => {
   if ((status === "watched" && !watched) || (status === "to_watch" && watched)) {
     removeCard(form.closest(".movie-card"), list);
   }
+});
+
+// Pulsante "Close" in fondo alla scheda aperta: chiude la scheda
+document.addEventListener("click", (event) => {
+  const button = event.target.closest(".card-close");
+  if (!button) return;
+  const card = button.closest(".movie-card");
+  card.open = false;
+  // Se la parte alta della scheda è uscita dallo schermo, la riportiamo in vista
+  if (card.getBoundingClientRect().top < 0) card.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+// Locandina a schermo intero: cliccandola si apre sopra la pagina, un clic ovunque la chiude
+document.addEventListener("click", (event) => {
+  const viewer = document.getElementById("poster-viewer");
+  if (!viewer) return;
+
+  // Clic sul visore aperto (immagine o sfondo): si chiude
+  if (event.target.closest("#poster-viewer")) {
+    viewer.close();
+    return;
+  }
+
+  const poster = event.target.closest(".poster");
+  if (!poster || poster.src.endsWith("poster-placeholder.svg")) return;  // il placeholder non si ingrandisce
+
+  const image = viewer.querySelector("img");
+  image.src = poster.src;  // subito la versione già caricata, sfocata...
+  image.alt = poster.alt;
+  image.classList.add("loading");
+  viewer.showModal();
+
+  // Appena arriva quella in alta qualità la mettiamo a fuoco
+  const hd = new Image();
+  hd.onload = () => {
+    if (!viewer.open) return;
+    image.src = hd.src;
+    image.classList.remove("loading");
+  };
+  hd.onerror = () => image.classList.remove("loading");  // se la HD non arriva, togliamo almeno la sfocatura
+  hd.src = `/api/poster/${poster.dataset.movieId}?size=original`;
 });

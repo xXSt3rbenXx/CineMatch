@@ -161,3 +161,11 @@ def test_counter(client):
     text = client.get("/watchlist", params={"genre": "Animation"}).text
     assert '<span id="count-total">4</span>' in text
     assert '<span id="count-watched">1</span>' in text
+
+# La ricerca nella watchlist mostra la scheda del film scelto, col cuore per salvarlo e senza ✓
+def test_watchlist_selected_movie(client):
+    login_user(client)
+    response = client.get("/watchlist", params={"movie": 157336})
+    assert "Interstellar" in response.text
+    assert "Add to watchlist" in response.text
+    assert "Mark as watched" not in response.text

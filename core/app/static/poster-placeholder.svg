@@ -1,6 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="185" height="278" viewBox="0 0 185 278">
-  <!-- Locandina finta: rettangolo grigio con la scritta, stesse proporzioni di quelle di TMDB -->
-  <rect width="185" height="278" fill="#2a2a2a"/>
-  <text x="92.5" y="139" fill="#888" font-family="sans-serif" font-size="16"
-        text-anchor="middle" dominant-baseline="middle">No poster</text>
+  <!-- Locandina di riserva nei colori del brand: simbolo di CineMatch "spento" e la scritta -->
+  <rect width="185" height="278" fill="#0F1020"/>
+  <g transform="translate(92.5 120) scale(0.6) translate(-56 -60)" fill="none" stroke="#4A4D6A" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 88.44 28.42 A 42.5 42.5 0 1 0 88.44 91.58" stroke-width="11"/>
+    <path d="M 50 41 L 50 79 L 88 60 Z" fill="#4A4D6A" stroke-width="6"/>
+  </g>
+  <text x="92.5" y="196" fill="#A9ABBD" font-family="system-ui, sans-serif" font-size="14" text-anchor="middle">No poster</text>
 </svg>
