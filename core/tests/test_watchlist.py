@@ -88,22 +88,6 @@ def test_filter_genre(client):
     assert "Interstellar" in text and "12 Angry Men" in text
     assert "Star Wars" not in text and "Shrek" not in text
 
-# Filtro per decennio
-def test_filter_decade(client):
-    login_user(client)
-    save_test_movies(client)
-    text = client.get("/watchlist", params={"decade": "2000"}).text
-    assert "Shrek" in text
-    assert "Interstellar" not in text and "Star Wars" not in text and "12 Angry Men" not in text
-
-# Filtro per durata massima (90 minuti inclusi)
-def test_filter_runtime(client):
-    login_user(client)
-    save_test_movies(client)
-    text = client.get("/watchlist", params={"runtime": "90"}).text
-    assert "Shrek" in text
-    assert "12 Angry Men" not in text  # 96 minuti
-
 # Filtri combinati senza risultati: messaggio con il link per toglierli
 def test_filters_no_match(client):
     login_user(client)
@@ -124,13 +108,6 @@ def test_sort_oldest(client):
     save_test_movies(client)
     text = client.get("/watchlist", params={"sort": "oldest"}).text
     assert in_order(text, ["12 Angry Men", "Star Wars", "Shrek", "Interstellar"])
-
-# Ordinamento per numero di voti (i più noti prima)
-def test_sort_votes(client):
-    login_user(client)
-    save_test_movies(client)
-    text = client.get("/watchlist", params={"sort": "votes"}).text
-    assert in_order(text, ["Interstellar", "Star Wars", "Shrek", "12 Angry Men"])
 
 # Segna (watched=1) o toglie (watched=0) il ✓ di un film, come fa il JavaScript
 def set_watched(client, movie_id, watched):

@@ -6,30 +6,11 @@ from app.database import add_to_watchlist, get_watchlist, remove_from_watchlist,
 from app.templating import get_current_user, templates
 from app.security import safe_next
 
+from app.watchlist_filters import (
+    RUNTIME_OPTIONS, SORT_OPTIONS, STATUS_OPTIONS, apply_filters, menu_options, sort_movies,
+)
+
 router = APIRouter()
-
-# Modi di ordinare la watchlist
-SORT_OPTIONS = {
-    "recent": "Recently added",
-    "rating": "Highest rated",
-    "votes": "Most voted",
-    "newest": "Newest releases",
-    "oldest": "Oldest releases",
-}
-
-# Durata massima: valore nell'indirizzo (minuti) -> testo nel menu
-RUNTIME_OPTIONS = {
-    "90": "Up to 90 min",
-    "120": "Up to 120 min",
-    "150": "Up to 150 min",
-    "180": "Up to 180 min",
-}
-
-# Stato di visione: valore nell'indirizzo -> testo nel menu
-STATUS_OPTIONS = {
-    "watched": "Watched",
-    "to_watch": "To watch",
-}
 
 # Vero se la richiesta arriva dal JavaScript del cuore (che non vuole ricaricare la pagina)
 def wants_json(request: Request) -> bool:
@@ -107,8 +88,7 @@ def watchlist_page(
     watched_count = sum(1 for m in movies if m["id"] in watched_ids)
 
     # Voci dei menu, calcolate su tutta la watchlist (prima di filtrare)
-    genres = sorted({g for m in movies for g in m["genres"]})
-    decades = sorted({m["year"] // 10 * 10 for m in movies})  # es. 1994 -> 1990
+    genres, decades = menu_options(movies)
 
     # Valori non validi o non più presenti (es. hai tolto l'ultimo film di quel genere): li ignoriamo
     if genre not in genres:
@@ -119,30 +99,11 @@ def watchlist_page(
         runtime = ""
     if status not in STATUS_OPTIONS:
         status = ""
+    if sort not in SORT_OPTIONS:
+        sort = "recent"
 
-    # Filtri
-    if genre:
-        movies = [m for m in movies if genre in m["genres"]]
-    if decade:
-        movies = [m for m in movies if m["year"] // 10 * 10 == int(decade)]
-    if runtime:
-        movies = [m for m in movies if m["runtime"] <= int(runtime)]
-    if status == "watched":
-        movies = [m for m in movies if m["id"] in watched_ids]
-    elif status == "to_watch":
-        movies = [m for m in movies if m["id"] not in watched_ids]
-
-    # Ordinamento: i film arrivano già dal più recente, gli altri ordini li applichiamo qui
-    if sort == "rating":
-        movies.sort(key=lambda m: m["vote_average"], reverse=True)
-    elif sort == "votes":
-        movies.sort(key=lambda m: m["vote_count"], reverse=True)
-    elif sort == "newest":
-        movies.sort(key=lambda m: m["year"], reverse=True)
-    elif sort == "oldest":
-        movies.sort(key=lambda m: m["year"])
-    else:
-        sort = "recent"  # valore sconosciuto nell'indirizzo: usiamo l'ordine predefinito
+    movies = apply_filters(movies, watched_ids, genre, decade, runtime, status)
+    movies = sort_movies(movies, sort)
 
     return templates.TemplateResponse(
         request,

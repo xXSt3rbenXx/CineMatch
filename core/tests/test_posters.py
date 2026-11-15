@@ -2,6 +2,7 @@ import httpx
 
 from app import posters
 from app.routers import movies
+from app.circuit_breaker import CircuitBreaker
 
 PLACEHOLDER = "/static/poster-placeholder.svg"
 FAKE_URL = "https://image.tmdb.org/t/p/w342/fake.jpg"
@@ -23,7 +24,7 @@ def test_poster_placeholder_for_unknown_movie(client):
     response = client.get("/api/poster/1", follow_redirects=False)
     assert response.headers["location"] == PLACEHOLDER
 
-# Circuit Breaker: dopo FAILURE_LIMIT errori di fila smettiamo di chiamare TMDB
+# Circuit Breaker collegato a TMDB: dopo 3 errori di fila smettiamo di chiamarlo
 def test_circuit_breaker_stops_calling_tmdb(monkeypatch):
     calls = []
 
@@ -34,15 +35,14 @@ def test_circuit_breaker_stops_calling_tmdb(monkeypatch):
 
     monkeypatch.setattr(posters.httpx, "get", broken_get)
     monkeypatch.setenv("TMDB_TOKEN", "fake-token")
-    # Partiamo da zero: nessun errore, salvavita a posto, memoria vuota
-    monkeypatch.setattr(posters, "_failures", 0)
-    monkeypatch.setattr(posters, "_open_until", 0.0)
+    # Partiamo da zero: circuito nuovo e memoria vuota
+    monkeypatch.setattr(posters, "breaker", CircuitBreaker(failure_limit=3, cooldown_seconds=30))
     monkeypatch.setattr(posters, "_cache", {})
 
-    for _ in range(posters.FAILURE_LIMIT):
+    for _ in range(3):
         assert posters.get_poster_url(157336) is None
-    assert len(calls) == posters.FAILURE_LIMIT
+    assert len(calls) == 3
 
-    # Salvavita saltato: la richiesta dopo non arriva nemmeno a TMDB
+    # Circuito aperto: la richiesta dopo non arriva nemmeno a TMDB
     assert posters.get_poster_url(157336) is None
-    assert len(calls) == posters.FAILURE_LIMIT
+    assert len(calls) == 3
