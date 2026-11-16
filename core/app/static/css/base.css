@@ -1,22 +1,19 @@
-/* =========================================================
-   BASE: colori, regole generali, header, footer
-   Si carica per primo: gli altri file si appoggiano a questo.
-   ========================================================= */
+/* Base: colori, regole generali, header, footer. Si carica per primo. */
 
-/* ---------- Colori e misure (cambiandoli qui cambia tutta l'app) ---------- */
+/* ---------- Colori e misure ---------- */
 
 :root {
-  --bg: #0F1020;            /* blu notte: sfondo della pagina */
-  --surface: #1A1C33;       /* blu più chiaro: header, schede, campi, menu */
-  --surface-hover: #25284A; /* superfici al passaggio del mouse */
-  --border: #2E3150;        /* bordi sottili */
-  --text: #F4F1EA;          /* avorio: testo principale */
-  --text-muted: #A9ABBD;    /* grigio-lavanda: testi secondari */
-  --text-faint: #4A4D6A;    /* elementi spenti (es. ✓ non ancora visto) */
-  --accent: #F04A23;        /* rosso-arancio: cuore, pulsanti, evidenze */
-  --success: #3FB950;       /* verde del ✓ "visto" e dei toast di conferma */
-  --error: #FF6B6B;         /* messaggi di errore */
-  --radius: 8px;            /* angoli arrotondati */
+  --bg: #0F1020;
+  --surface: #1A1C33;       /* header, schede, campi, menu */
+  --surface-hover: #25284A;
+  --border: #2E3150;
+  --text: #F4F1EA;
+  --text-muted: #A9ABBD;
+  --text-faint: #4A4D6A;    /* elementi spenti (es. ✓ non visto) */
+  --accent: #F04A23;
+  --success: #3FB950;
+  --error: #FF6B6B;
+  --radius: 8px;
 }
 
 /* ---------- Regole generali ---------- */
@@ -45,18 +42,18 @@ button {
   color: var(--error);
 }
 
-/* Niente riquadro blu del browser quando si tocca qualcosa sul telefono: il riscontro lo danno già i nostri stili */
+/* Toglie il riquadro blu che i browser mobili mostrano al tocco */
 * {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Navigando con la tastiera (Tab) l'elemento selezionato ha un contorno arancio; col mouse non compare */
+/* Contorno visibile solo navigando da tastiera, non col mouse */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-/* Messaggi nella pagina (lista vuota, nessun risultato, film non trovato...) */
+/* Messaggi nella pagina (lista vuota, nessun risultato...) */
 .notice {
   margin: 2.5rem 0;
   text-align: center;
@@ -96,7 +93,6 @@ header h1 a {
   text-decoration: none;
 }
 
-/* Logo a sinistra e, se la pagina lo prevede, il suo titolo separato da una linea sottile */
 .brand {
   display: flex;
   align-items: center;
@@ -128,7 +124,6 @@ nav form {
 
 /* ---------- Menu del profilo ---------- */
 
-/* Icona tonda del profilo; la tendina piccola si apre sotto, allineata a destra */
 .profile-menu {
   position: relative;
 }
@@ -164,7 +159,6 @@ nav form {
   color: var(--text-muted);
 }
 
-/* Voci del menu: link e logout hanno lo stesso aspetto */
 .profile-items {
   margin: 0;
   padding-left: 1.1rem;
@@ -175,6 +169,7 @@ nav form {
   font-size: 0.9rem;
 }
 
+/* Il logout è un pulsante (POST), ma deve sembrare un link come le altre voci */
 .profile-items a,
 .profile-items button {
   padding: 0;
@@ -210,10 +205,9 @@ footer a {
   color: var(--text-muted);
 }
 
-/* ---------- Schermi piccoli (telefoni e finestre strette) ---------- */
+/* ---------- Schermi piccoli ---------- */
 
 @media (max-width: 600px) {
-  /* Margini più stretti per lasciare spazio al contenuto */
   header {
     padding: 0.75rem 1rem;
   }

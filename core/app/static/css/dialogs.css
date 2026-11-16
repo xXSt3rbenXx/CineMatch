@@ -1,11 +1,8 @@
-/* =========================================================
-   SOPRA LA PAGINA: toast, visore della locandina,
-   finestra di conferma
-   ========================================================= */
+/* Elementi sopra la pagina: toast, visore della locandina, finestra di conferma */
 
-/* ---------- Toast (messaggio temporaneo in basso al centro) ---------- */
+/* ---------- Toast ---------- */
 
-/* Nascosto finché non ha la classe "visible": allora sale e compare */
+/* Nascosto finché showToast() non aggiunge "visible" */
 #toast {
   position: fixed;
   left: 50%;
@@ -31,15 +28,14 @@
   transform: translate(-50%, 0);
 }
 
-/* Toast di conferma (film aggiunto, segnato come visto): riga verde */
 #toast.success {
   border-left-color: var(--success);
 }
 
-/* ---------- Animazioni di tutte le finestre ---------- */
+/* ---------- Animazioni delle finestre ---------- */
 
-/* Le finestre (visore, conferma) compaiono e scompaiono con una dissolvenza, sfondo compreso.
-   La chiusura dura 0.3 s: lo stesso tempo che aspetta closeDialog() in watchlist.js */
+/* La chiusura dura 0.3 s: lo stesso tempo che aspetta closeDialog() prima di chiudere davvero.
+   forwards lascia l'opacità a zero, così la finestra non ricompare per un istante */
 dialog[open],
 dialog[open]::backdrop {
   animation: fade-in 0.2s ease;
@@ -60,7 +56,7 @@ dialog.closing::backdrop {
   to { opacity: 0; }
 }
 
-/* ---------- Visore della locandina a schermo intero ---------- */
+/* ---------- Visore della locandina ---------- */
 
 #poster-viewer {
   padding: 0;
@@ -73,8 +69,8 @@ dialog.closing::backdrop {
   background: rgba(0, 0, 0, 0.8);
 }
 
-/* Misura fissa: la versione media viene subito ingrandita, così all'arrivo della HD cambia solo la nitidezza.
-   92% dell'altezza dello schermo, ma senza superare il 92% della larghezza (92 x 1.5 = 138) */
+/* Misura fissa: all'arrivo della versione HD cambia solo la nitidezza, non la grandezza.
+   Altezza al 92% dello schermo, ma senza superare il 92% della larghezza (92 x 1.5 = 138) */
 #poster-viewer img {
   display: block;
   width: auto;
@@ -88,12 +84,11 @@ dialog.closing::backdrop {
   transition: filter 0.6s ease;
 }
 
-/* Finché arriva la versione HD l'immagine resta un po' sfocata, poi "mette a fuoco" */
+/* Sfocata finché non arriva la versione HD; clip-path sopra evita che la sfocatura esca dagli angoli */
 #poster-viewer img.loading {
   filter: blur(6px);
 }
 
-/* La X in alto a destra, appoggiata sull'angolo della locandina */
 .viewer-close {
   position: absolute;
   top: -0.9rem;
@@ -119,7 +114,7 @@ dialog.closing::backdrop {
 
 /* ---------- Finestra di conferma ---------- */
 
-/* Riquadro al centro, nello stile delle schede */
+/* Padding sul riquadro interno: così un clic sul dialog stesso vuol dire "clic sullo sfondo" */
 #confirm-dialog {
   padding: 0;
   border: 1px solid var(--border);
@@ -172,9 +167,8 @@ dialog.closing::backdrop {
   color: var(--bg);
 }
 
-/* ---------- Effetti al passaggio del mouse ---------- */
+/* ---------- Hover ---------- */
 
-/* Solo con un mouse vero: sul telefono resterebbero "accesi" dopo il tocco */
 @media (hover: hover) {
   .viewer-close:hover {
     background: var(--accent);

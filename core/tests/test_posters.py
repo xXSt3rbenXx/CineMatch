@@ -4,7 +4,7 @@ from app import posters
 from app.routers import movies
 from app.circuit_breaker import CircuitBreaker
 
-PLACEHOLDER = "/static/poster-placeholder.svg"
+PLACEHOLDER = "/static/img/poster-placeholder.svg"
 FAKE_URL = "https://image.tmdb.org/t/p/w342/fake.jpg"
 
 # Se TMDB dà la locandina, la route rimanda il browser lì (TMDB finto: nessuna chiamata vera)

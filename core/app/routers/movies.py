@@ -26,5 +26,5 @@ def poster(movie_id: int, size: str = "w342"):
     url = None
     if get_movie(movie_id) is not None:  # chiediamo a TMDB solo film del catalogo
         url = get_poster_url(movie_id, size=size)
-    return RedirectResponse(url or "/static/poster-placeholder.svg")
+    return RedirectResponse(url or "/static/img/poster-placeholder.svg")
 

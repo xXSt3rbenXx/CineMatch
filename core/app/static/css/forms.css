@@ -1,8 +1,6 @@
-/* =========================================================
-   FORM: campi di testo, menu a tendina, ricerca con suggerimenti
-   ========================================================= */
+/* Form: campi, menu a tendina, ricerca con suggerimenti */
 
-/* ---------- Form e campi (login, registrazione, filtri) ---------- */
+/* ---------- Campi ---------- */
 
 form {
   display: flex;
@@ -20,16 +18,16 @@ select {
   color: var(--text);
 }
 
-/* Nei campi di testo e nei menu il bordo stesso diventa arancio quando ci stai scrivendo o scegliendo */
+/* Nei campi il bordo arancio sostituisce il contorno */
 input:focus,
 select:focus {
   outline: none;
   border-color: var(--accent);
 }
 
-/* ---------- Menu a tendina personalizzati ---------- */
+/* ---------- Menu a tendina ---------- */
 
-/* Funzionano su Chrome ed Edge recenti; negli altri browser resta il menu di sistema */
+/* base-select rende i menu stilizzabili (Chrome/Edge); gli altri browser mostrano quello di sistema */
 select,
 ::picker(select) {
   appearance: base-select;
@@ -42,7 +40,6 @@ select {
   cursor: pointer;
 }
 
-/* La freccetta: gira quando il menu è aperto */
 select::picker-icon {
   color: var(--text-muted);
   transition: rotate 0.2s;
@@ -52,7 +49,7 @@ select:open::picker-icon {
   rotate: 180deg;
 }
 
-/* La tendina: stesso stile dei menu del sito, altezza massima con scorrimento (es. tanti generi) */
+/* Altezza massima con scorrimento, per le liste lunghe (es. i generi) */
 ::picker(select) {
   margin-top: 0.3rem;
   padding: 0.3rem;
@@ -75,7 +72,6 @@ option:hover {
   background: var(--surface-hover);
 }
 
-/* La voce scelta è arancio con testo blu notte */
 option:checked {
   background: var(--accent);
   color: var(--bg);
@@ -88,7 +84,6 @@ option::checkmark {
 
 /* ---------- Ricerca con suggerimenti ---------- */
 
-/* Scritta sopra la casella di ricerca, centrata come la casella */
 .search-label {
   display: block;
   max-width: 480px;
@@ -110,7 +105,6 @@ option::checkmark {
   padding-right: 2rem;
 }
 
-/* La X per togliere il film scelto, dentro la casella a destra */
 .search .clear {
   position: absolute;
   top: 50%;
@@ -120,7 +114,7 @@ option::checkmark {
   text-decoration: none;
 }
 
-/* I suggerimenti compaiono sovrapposti sotto la casella */
+/* I suggerimenti si sovrappongono alla pagina, attaccati sotto la casella */
 .suggestions {
   position: absolute;
   top: 100%;
