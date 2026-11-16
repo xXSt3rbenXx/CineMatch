@@ -1,4 +1,4 @@
-{% from "icons.html" import icon %}
+{% from "partials/icons.html" import icon %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -7,7 +7,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ title }}</title>
-  {# Stili divisi per argomento; l'ordine conta: dal più generale al più specifico #}
+  {# L'ordine conta: dal più generale al più specifico #}
   <link rel="stylesheet" href="/static/css/base.css">
   <link rel="stylesheet" href="/static/css/forms.css">
   <link rel="stylesheet" href="/static/css/card.css">
@@ -34,15 +34,11 @@
       {% if user %}
         <details class="profile-menu">
 
-          {# Icona del profilo; il nome compare passandoci sopra col mouse e dentro la tendina #}
+          {# Il nome utente compare passandoci sopra col mouse #}
           <summary title="{{ user['username'] }}" aria-label="Profile">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <circle cx="12" cy="8" r="4"/>
-              <path d="M4 20c0-4 4-6 8-6s8 2 8 6z"/>
-            </svg>
+            {{ icon("user") }}
           </summary>
           
-          {# Contenuto della tendina: nome, link alla watchlist e logout #}
           <div class="profile-dropdown">
             <p class="profile-name">{{ user["username"] }}'s menu:</p>
             <ul class="profile-items">
@@ -73,7 +69,7 @@
     <img alt="">
   </dialog>
 
-    {# Finestra di conferma nello stile del sito (sostituisce il confirm() del browser) #}
+  {# Finestra di conferma: sostituisce il confirm() del browser (askConfirm in ui.js) #}
   <dialog id="confirm-dialog" aria-labelledby="confirm-message">
     <div class="confirm-box">
       <p id="confirm-message"></p>
@@ -84,7 +80,7 @@
     </div>
   </dialog>
 
-  {# Messaggio temporaneo in basso ("toast"): lo riempie e lo mostra showToast() in ui.js #}
+  {# Toast: lo riempie e lo mostra showToast() in ui.js #}
   <div id="toast" role="status" aria-live="polite"></div>
 
   {# Citazione richiesta dalle regole di TMDB, che ci fornisce le locandine #}

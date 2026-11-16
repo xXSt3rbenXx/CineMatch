@@ -1,12 +1,11 @@
-{# Casella di ricerca riutilizzabile: mentre scrivi compaiono i suggerimenti, cliccandone uno
-   la pagina si ricarica con ?movie=id (gli altri parametri, es. i filtri, restano).
+{# Casella di ricerca riutilizzabile: scegliendo un suggerimento la pagina si ricarica con ?movie=id.
    Usa la variabile movie: il film scelto, o None #}
 
 <div class="search">
   <input type="text" id="search" placeholder="Search a movie by title" autocomplete="off"
          value="{{ movie.title if movie else '' }}">
   {% if movie %}
-    {# La X toglie il film scelto e lascia il resto della pagina com'è #}
+    {# Senza JavaScript la X è un link che toglie ?movie=id; search.js la gestisce senza ricaricare #}
     <a href="{{ request.url.remove_query_params('movie') }}" class="clear" title="Clear">✕</a>
   {% endif %}
   <ul class="suggestions"></ul>

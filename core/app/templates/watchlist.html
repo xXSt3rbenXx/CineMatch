@@ -5,14 +5,14 @@
 
   {# Ricerca: per aggiungere un film di cui si conosce il titolo #}
   <label for="search" class="search-label">Add a movie to your watchlist</label>
-  {% include "search.html" %}
+  {% include "partials/search.html" %}
   {% if movie %}
-    <div class="selected-movie" data-reload-on-save>{% include "movie_card.html" %}</div>
+    <div class="selected-movie" data-reload-on-save>{% include "partials/movie_card.html" %}</div>
   {% elif movie_id %}
     <p class="notice">Movie not found.</p>
   {% endif %}
 
-  {# Filtri e ordinamento (solo se la watchlist non è vuota): ogni scelta ricarica la pagina con ?genre=...&decade=... #}
+  {# Ogni scelta ricarica la pagina con i filtri nell'indirizzo (?genre=...&decade=...) #}
   {% if total %}
     <form method="get" action="/watchlist" class="filters">
 
@@ -65,12 +65,11 @@
     </p>
   {% endif %}
 
-  {# Le schede dei film salvati, dal più recente #}
   {% if movies %}
-    {# Il JavaScript del cuore riconosce questo contenitore e qui toglie subito le schede #}
+    {# cards.js riconosce questo contenitore: qui le schede tolte spariscono #}
     <div class="watchlist-list" data-status="{{ status }}">
       {% for movie in movies %}
-        {% include "movie_card.html" %}
+        {% include "partials/movie_card.html" %}
       {% endfor %}
     </div>
 

@@ -1,36 +1,39 @@
-{% from "icons.html" import icon %}
+{% from "partials/icons.html" import icon %}
 
-{# Scheda di un film: chiusa mostra i dati essenziali, cliccata si espande con il resto #}
+{# Scheda di un film: chiusa mostra i dati essenziali, cliccata si espande con il resto.
+   Variabili che la pagina deve passare:
+   - movie: il film (dizionario restituito da get_movie)
+   - saved_ids: id dei film salvati dall'utente, oppure None se non ha fatto login (niente cuore)
+   - watched_ids (facoltativa): id dei film già visti; se c'è, compare anche il ✓ #}
+
 <details class="movie-card">
   <summary>
-    {# Riga 1: titolo, anno e durata #}
     <span class="card-head">
       <strong class="card-title">{{ movie.title }}</strong>
-      {# Anno e durata viaggiano insieme: o entrambi accanto al titolo, o entrambi a capo #}
       <span class="card-meta">
         <span class="meta">{{ icon("calendar") }} {{ movie.year }}</span>
         <span class="meta">{{ icon("clock") }} {{ movie.runtime }} min</span>
       </span>
     </span>
 
-    {# Riga 2: tutti i generi come pillole (nel catalogo al massimo 7; se serve vanno a capo) #}
+    {# Tutti i generi: nel catalogo sono al massimo 7 #}
     <span class="card-tags">
       {% for genre in movie.genres %}
         <span class="chip">{{ genre }}</span>
       {% endfor %}
     </span>
-    
-    {# Invito a cliccare: il CSS scrive "Details"; da aperta la scheda si chiude dal pulsante in fondo #}
+
+    {# Il testo "Details" lo scrive il CSS #}
     <span class="card-toggle" aria-hidden="true"></span>
 
-    {# Azioni a destra della scheda: solo per chi ha fatto login #}
+    {# ✓ e cuore: solo per chi ha fatto login #}
     {% if saved_ids is not none %}
-      {# Dopo il clic si torna a questa stessa pagina #}
+      {# Senza JavaScript, dopo il clic si torna a questa stessa pagina #}
       {% set next_url = request.url.path ~ ("?" ~ request.url.query if request.url.query else "") %}
 
       <span class="card-actions">
 
-        {# ✓ "visto": solo nella pagina della watchlist. Verde = visto, grigio = da vedere #}
+        {# ✓ solo nella watchlist e solo per i film salvati #}
         {% if watched_ids is defined and movie.id in saved_ids %}
           {% set is_watched = movie.id in watched_ids %}
           <form method="post" action="/watchlist/watched" class="check-form">
@@ -44,7 +47,6 @@
           </form>
         {% endif %}
 
-        {# Cuore. Pieno = salvato (cliccando chiede conferma e lo toglie), vuoto = da salvare #}
         {% if movie.id in saved_ids %}
           <form method="post" action="/watchlist/remove" class="heart-form">
             <input type="hidden" name="movie_id" value="{{ movie.id }}">
@@ -79,12 +81,11 @@
       {% if movie.director %}
         <p class="info-row">{{ icon("director") }} <span>Directed by <strong>{{ movie.director }}</strong></span></p>
       {% endif %}
-      {# Voto con un decimale e voti con il separatore delle migliaia (13,752) #}
+      {# Es. 7.9/10 · 13,752 votes #}
       <p class="info-row">{{ icon("star") }} <span><strong>{{ "%.1f" | format(movie.vote_average) }}</strong>/10 · {{ "{:,}".format(movie.vote_count) }} votes</span></p>
 
       <p class="overview">{{ movie.overview }}</p>
 
-      {# In fondo: link a TMDB a sinistra, "Close" a destra #}
       <div class="card-footer">
         <a class="tmdb-link" href="https://www.themoviedb.org/movie/{{ movie.id }}" target="_blank" rel="noopener">{{ icon("link") }} View on TMDB</a>
         <button type="button" class="card-close">Close</button>

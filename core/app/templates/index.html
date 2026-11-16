@@ -8,11 +8,10 @@
     <p>Welcome to CineMatch. <a href="/login">Log in</a> or <a href="/register">register</a> to save your own watchlist.</p>
   {% endif %}
 
-  {% include "search.html" %}
+  {% include "partials/search.html" %}
 
-  {# Scheda del film selezionato #}
   {% if movie %}
-    <div class="selected-movie">{% include "movie_card.html" %}</div>
+    <div class="selected-movie">{% include "partials/movie_card.html" %}</div>
   {% elif movie_id %}
     <p class="notice">Movie not found.</p>
   {% endif %}

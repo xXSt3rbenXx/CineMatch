@@ -141,6 +141,14 @@ nav form {
   display: none;
 }
 
+/* L'icona del profilo è piena, a differenza delle altre che sono a linea */
+.profile-menu .icon {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+  stroke: none;
+}
+
 .profile-dropdown {
   position: absolute;
   top: calc(100% + 0.4rem);
