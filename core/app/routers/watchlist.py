@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
 from app.catalog import get_movie
 from app.database import add_to_watchlist, get_watchlist, remove_from_watchlist, set_watched
-from app.templating import get_current_user, templates
+from app.templating import get_current_user, templates, wants_json
 from app.security import safe_next
 
 from app.watchlist_filters import (
@@ -11,11 +11,6 @@ from app.watchlist_filters import (
 )
 
 router = APIRouter()
-
-
-# Vero se la richiesta arriva dal JavaScript (cuore e ✓), che vuole JSON invece di un redirect
-def wants_json(request: Request) -> bool:
-    return request.headers.get("X-Requested-With") == "fetch"
 
 
 # Risposta per chi non ha fatto login: 401 al JavaScript, altrimenti rimando alla pagina di login

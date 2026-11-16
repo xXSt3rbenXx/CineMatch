@@ -3,7 +3,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException
 
-from app.templating import templates
+from app.templating import templates, wants_json
 
 # Titolo e frase per ogni errore; gli altri codici usano GENERIC
 MESSAGES = {
@@ -13,9 +13,9 @@ MESSAGES = {
 GENERIC = ("Something went wrong", "This request couldn't be completed.")
 
 
-# Il JavaScript e le API leggono JSON: a loro una pagina HTML romperebbe il codice
+# Le API e il JavaScript leggono JSON: a loro una pagina HTML romperebbe il codice
 def wants_page(request: Request) -> bool:
-    return not request.url.path.startswith("/api/") and request.headers.get("X-Requested-With") != "fetch"
+    return not request.url.path.startswith("/api/") and not wants_json(request)
 
 
 def error_page(request: Request, status_code: int):

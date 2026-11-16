@@ -1,8 +1,7 @@
-import os
-
 import httpx
 
 from app.circuit_breaker import CircuitBreaker
+from app.config import TMDB_TOKEN
 
 TMDB_MOVIE_URL = "https://api.themoviedb.org/3/movie/{}"
 IMAGE_BASE_URL = "https://image.tmdb.org/t/p/"
@@ -26,8 +25,7 @@ def get_poster_url(movie_id: int, size: str = "w185") -> str | None:
     if movie_id in _cache:
         return _to_url(_cache[movie_id], size)
 
-    token = os.getenv("TMDB_TOKEN")
-    if not token:
+    if not TMDB_TOKEN:
         return None  # senza token l'app funziona lo stesso, solo senza locandine
 
     # Circuito aperto: non proviamo nemmeno, chi ci chiama mostrerà il placeholder
@@ -37,7 +35,7 @@ def get_poster_url(movie_id: int, size: str = "w185") -> str | None:
     try:
         response = httpx.get(
             TMDB_MOVIE_URL.format(movie_id),
-            headers={"Authorization": f"Bearer {token}"},
+            headers={"Authorization": f"Bearer {TMDB_TOKEN}"},
             timeout=TIMEOUT,
         )
         if response.status_code == 404:  # TMDB non conosce il film: ha risposto, quindi funziona

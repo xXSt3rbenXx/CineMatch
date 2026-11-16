@@ -24,5 +24,10 @@ def get_current_user(request: Request):
     return user
 
 
+# Vero se la richiesta arriva dal JavaScript (cuore, ✓...), che vuole JSON invece di una pagina o di un redirect
+def wants_json(request: Request) -> bool:
+    return request.headers.get("X-Requested-With") == "fetch"
+
+
 # Rende la funzione usabile dentro i template
 templates.env.globals["get_current_user"] = get_current_user

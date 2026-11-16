@@ -38,7 +38,7 @@ def test_circuit_breaker_stops_calling_tmdb(monkeypatch):
         raise httpx.ConnectError("no connection")
 
     monkeypatch.setattr(posters.httpx, "get", broken_get)
-    monkeypatch.setenv("TMDB_TOKEN", "fake-token")
+    monkeypatch.setattr(posters, "TMDB_TOKEN", "fake-token")
     # Partiamo da zero: circuito nuovo e memoria vuota
     monkeypatch.setattr(posters, "breaker", CircuitBreaker(failure_limit=3, cooldown_seconds=30))
     monkeypatch.setattr(posters, "_cache", {})

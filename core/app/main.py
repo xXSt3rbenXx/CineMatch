@@ -1,7 +1,5 @@
-import os
 from contextlib import asynccontextmanager
 from pathlib import Path
-from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException
@@ -9,21 +7,12 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.database import init_db
+from app.config import COOKIE_SECURE, SECRET_KEY
 from app.errors import http_error, server_error, validation_error
 from app.routers import auth, home, movies, recommend, watchlist
 from app.catalog import load_catalog
 
 BASE_DIR = Path(__file__).resolve().parent
-
-load_dotenv(BASE_DIR.parent / ".env")
-SECRET_KEY = os.getenv("SECRET_KEY")
-
-if not SECRET_KEY or len(SECRET_KEY) < 32:
-    # Meglio fermarsi subito che avviare un'app con sessioni non sicure
-    raise RuntimeError("SECRET_KEY mancante o troppo corta (minimo 32 caratteri): crea il file core/.env")
-
-# In locale usiamo http; con HTTPS metti COOKIE_SECURE=true nel .env
-COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
 
 
 @asynccontextmanager
