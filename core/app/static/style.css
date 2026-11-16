@@ -37,6 +37,10 @@ button { padding: 0.5rem 1rem; cursor: pointer; }
 /* Toast: messaggio temporaneo in basso al centro, sale e sfuma in entrata */
 #toast { position: fixed; left: 50%; bottom: 1.5rem; z-index: 50; max-width: calc(100vw - 2rem); padding: 0.6rem 1.1rem; background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: var(--radius); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); font-size: 0.9rem; color: var(--text); opacity: 0; transform: translate(-50%, 1rem); pointer-events: none; transition: opacity 0.25s, transform 0.25s; }
 #toast.visible { opacity: 1; transform: translate(-50%, 0); }
+#toast.success { border-left-color: var(--success); }
+
+/* Niente riquadro blu del browser quando si tocca qualcosa sul telefono: il riscontro lo danno già i nostri stili */
+* { -webkit-tap-highlight-color: transparent; }
 
 /* =========================================================
    3. HEADER E MENU DEL PROFILO
@@ -121,6 +125,8 @@ option::checkmark { display: none; }
   .movie-card:not([open]):not(.removing):hover { border-color: var(--text-faint); transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35); }
   .card-toggle:hover, .card-close:hover { background: var(--accent); color: var(--bg); }
   .heart:hover, .check:hover { background: var(--surface-hover); }
+  .viewer-close:hover { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .confirm-cancel:hover { background: var(--surface-hover); }
 }
 
 /* Quando viene tolta dalla watchlist sfuma e scivola un po' a destra */
@@ -178,7 +184,6 @@ option::checkmark { display: none; }
 
 /* Visore della locandina: immagine grande al centro, sfondo nero semitrasparente */
 #poster-viewer { padding: 0; border: none; background: none; overflow: visible; }
-#poster-viewer[open] { animation: fade-in 0.2s ease; }
 #poster-viewer img { display: block; 
     height: min(92vh, 138vw); 
     width: auto; 
@@ -195,6 +200,25 @@ option::checkmark { display: none; }
 
 #poster-viewer::backdrop { background: rgba(0, 0, 0, 0.8); }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* Tutte le finestre (visore, conferma) compaiono e scompaiono con una dissolvenza, sfondo compreso */
+dialog[open], dialog[open]::backdrop { animation: fade-in 0.2s ease; }
+dialog.closing, dialog.closing::backdrop { animation: fade-out 0.3s ease forwards; }
+@keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
+
+/* La X in alto a destra, appoggiata sull'angolo della locandina */
+.viewer-close { position: absolute; top: -0.9rem; right: -0.9rem; z-index: 1; display: flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; padding: 0; border: 1px solid var(--border); border-radius: 50%; background: var(--surface); color: var(--text); cursor: pointer; }
+.viewer-close .icon { width: 20px; height: 20px; }
+
+/* Finestra di conferma: riquadro al centro, nello stile delle schede */
+#confirm-dialog { padding: 0; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6); }
+#confirm-dialog::backdrop { background: rgba(0, 0, 0, 0.6); }
+.confirm-box { max-width: min(85vw, 360px); padding: 1.25rem 1.5rem; text-align: center; }
+#confirm-message { margin: 0 0 1.25rem; line-height: 1.5; }
+.confirm-actions { display: flex; justify-content: center; gap: 0.75rem; }
+.confirm-actions button { padding: 0.45rem 1.2rem; border-radius: 999px; font: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+.confirm-cancel { border: 1px solid var(--border); background: none; color: var(--text); }
+.confirm-ok { border: 1px solid var(--accent); background: var(--accent); color: var(--bg); }
 
 /* Sinossi giustificata; la sillabazione evita i "buchi" tra le parole sulle righe strette */
 .overview { line-height: 1.55; text-align: justify; hyphens: auto; }
@@ -254,4 +278,8 @@ footer a { color: var(--text-muted); }
   /* Scheda aperta: locandina sopra, dati sotto a tutta larghezza */
   .card-body { flex-direction: column; }
   .poster { width: 150px; align-self: center; }
+
+/* Filtri: griglia di 3 colonne (3 sopra, 2 sotto) */
+  .filters { display: grid; grid-template-columns: repeat(3, auto); justify-content: center; gap: 0.5rem; }
+  .filters select { padding: 0.4rem 0.5rem; font-size: 0.8rem; }
 }

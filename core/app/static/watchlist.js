@@ -1,8 +1,10 @@
-// Messaggio temporaneo in basso ("toast"): compare, resta 2.5 secondi e sparisce
-function showToast(message) {
+// Messaggio temporaneo in basso ("toast"): compare, resta 2.5 secondi e sparisce.
+// Con type = "success" la riga a sinistra è verde (es. film segnato come visto)
+function showToast(message, type = "") {
   const toast = document.getElementById("toast");
   if (!toast) return;
   toast.textContent = message;
+  toast.classList.toggle("success", type === "success");
   toast.classList.add("visible");
   clearTimeout(toast.timer);
   toast.timer = setTimeout(() => toast.classList.remove("visible"), 2500);
@@ -12,8 +14,10 @@ function showToast(message) {
 document.addEventListener("DOMContentLoaded", () => {
   const message = sessionStorage.getItem("toast");
   if (message) {
+    const type = sessionStorage.getItem("toastType") || "";
     sessionStorage.removeItem("toast");
-    showToast(message);
+    sessionStorage.removeItem("toastType");
+    showToast(message, type);
   }
 });
 
@@ -26,7 +30,10 @@ function removeCard(card, list) {
     if (list && !list.querySelector(".movie-card")) {
       // Se c'è un toast visibile, lo "portiamo" oltre il ricaricamento
       const toast = document.getElementById("toast");
-      if (toast && toast.classList.contains("visible")) sessionStorage.setItem("toast", toast.textContent);
+      if (toast && toast.classList.contains("visible")) {
+        sessionStorage.setItem("toast", toast.textContent);
+        sessionStorage.setItem("toastType", toast.classList.contains("success") ? "success" : "");
+      }
       window.location.reload();
     }
   }, 500);  // 500 ms: la durata della dissolvenza
@@ -45,9 +52,13 @@ document.addEventListener("submit", async (event) => {
   if (!form.classList.contains("heart-form")) return;  // ci interessano solo i cuori
   event.preventDefault();  // blocca l'invio classico del form
 
+  const card = form.closest(".movie-card");
+  const title = card.querySelector(".card-title").textContent;
+
   const removing = form.action.endsWith("/watchlist/remove");
-  // Per togliere un film chiediamo conferma, per aggiungerlo basta un clic
-  if (removing && !confirm("Remove this movie from your watchlist?")) return;
+  // Per togliere un film chiediamo conferma (con la nostra finestra), per aggiungerlo basta un clic
+  if (removing && !(await askConfirm(`Remove "${title}" from your watchlist?`))) return;
+
 
   const response = await fetch(form.action, {
     method: "POST",
@@ -62,14 +73,15 @@ document.addEventListener("submit", async (event) => {
 
   if (!response.ok) return;
 
-    const { saved } = await response.json();
-  const card = form.closest(".movie-card");
-  const title = card.querySelector(".card-title").textContent;
+  const { saved } = await response.json();
   const message = saved ? `"${title}" added to your watchlist` : `"${title}" removed from your watchlist`;
+  const type = saved ? "success" : "";  // verde se aggiunto, arancio se tolto
 
-// Cuore della scheda scelta con la ricerca della watchlist: la scheda sfuma e la pagina.
+  // Cuore della scheda scelta con la ricerca della watchlist: la scheda sfuma e la pagina
+  // si ricarica (stessi filtri e ordinamento) per aggiornare la lista; il toast compare dopo
   if (form.closest(".selected-movie[data-reload-on-save]")) {
     sessionStorage.setItem("toast", message);
+    sessionStorage.setItem("toastType", type);
     removeCard(card);
     const url = new URL(window.location.href);
     url.searchParams.delete("movie");
@@ -77,7 +89,7 @@ document.addEventListener("submit", async (event) => {
     return;
   }
 
-  showToast(message);
+  showToast(message, type);
 
   // Nella lista della watchlist la scheda tolta sparisce
   const list = form.closest(".watchlist-list");
@@ -123,6 +135,11 @@ document.addEventListener("submit", async (event) => {
   button.setAttribute("aria-label", button.title);
   bumpCount("count-watched", watched ? 1 : -1);
 
+  // Toast di conferma: verde se segnato come visto, normale se tolto
+  const title = form.closest(".movie-card").querySelector(".card-title").textContent;
+  if (watched) showToast(`"${title}" marked as watched`, "success");
+  else showToast(`"${title}" marked as not watched`);
+
   // Con il filtro "Watched" o "To watch" attivo, la scheda che non corrisponde più sparisce
   const list = form.closest(".watchlist-list");
   const status = list ? list.dataset.status : "";
@@ -141,6 +158,43 @@ document.addEventListener("click", (event) => {
   if (card.getBoundingClientRect().top < 0) card.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
+// Chiude una finestra (<dialog>) con una breve dissolvenza; value dice com'è stata chiusa (es. "ok")
+function closeDialog(dialog, value = "") {
+  dialog.classList.add("closing");
+  setTimeout(() => {
+    dialog.classList.remove("closing");
+    dialog.close(value);
+  }, 300);  // 300 ms: la durata della dissolvenza nel CSS
+}
+
+// Esc (e il tasto "indietro" su Android) chiudono ogni finestra con la stessa dissolvenza
+document.querySelectorAll("dialog").forEach((dialog) => {
+  dialog.addEventListener("cancel", (event) => {
+    event.preventDefault();  // blocca la chiusura immediata del browser
+    closeDialog(dialog);
+  });
+});
+
+// Finestra di conferma nello stile del sito: la promessa vale true (Remove) o false (Cancel, Esc, clic fuori)
+function askConfirm(message) {
+  const dialog = document.getElementById("confirm-dialog");
+  if (!dialog) return Promise.resolve(confirm(message));  // riserva: la finestra del browser
+  dialog.querySelector("#confirm-message").textContent = message;
+  dialog.returnValue = "";  // dimentica la risposta della volta prima
+  dialog.showModal();
+  return new Promise((resolve) => {
+    dialog.addEventListener("close", () => resolve(dialog.returnValue === "ok"), { once: true });
+  });
+}
+
+// Pulsanti della finestra di conferma; un clic sullo sfondo scuro equivale ad annullare
+document.getElementById("confirm-dialog")?.addEventListener("click", (event) => {
+  const dialog = event.currentTarget;
+  const button = event.target.closest("button[data-value]");
+  if (button) closeDialog(dialog, button.dataset.value);
+  else if (event.target === dialog) closeDialog(dialog, "cancel");
+});
+
 // Locandina a schermo intero: cliccandola si apre sopra la pagina, un clic ovunque la chiude
 document.addEventListener("click", (event) => {
   const viewer = document.getElementById("poster-viewer");
@@ -148,7 +202,7 @@ document.addEventListener("click", (event) => {
 
   // Clic sul visore aperto (immagine o sfondo): si chiude
   if (event.target.closest("#poster-viewer")) {
-    viewer.close();
+    closeDialog(viewer);
     return;
   }
 

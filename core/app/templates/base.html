@@ -1,3 +1,5 @@
+{% from "icons.html" import icon %}
+
 <!DOCTYPE html>
 <html lang="en">
   
@@ -59,9 +61,20 @@
     {% block content %}{% endblock %}
   </main>
 
-  {# Visore della locandina a schermo intero: lo apre watchlist.js cliccando una locandina #}
   <dialog id="poster-viewer" aria-label="Poster">
+    <button type="button" class="viewer-close" aria-label="Close">{{ icon("close") }}</button>
     <img alt="">
+  </dialog>
+
+    {# Finestra di conferma nello stile del sito (sostituisce il confirm() del browser) #}
+  <dialog id="confirm-dialog" aria-labelledby="confirm-message">
+    <div class="confirm-box">
+      <p id="confirm-message"></p>
+      <div class="confirm-actions">
+        <button type="button" class="confirm-cancel" data-value="cancel">Cancel</button>
+        <button type="button" class="confirm-ok" data-value="ok">Remove</button>
+      </div>
+    </div>
   </dialog>
 
   {# Messaggio temporaneo in basso ("toast"): lo riempie e lo mostra showToast() in watchlist.js #}
