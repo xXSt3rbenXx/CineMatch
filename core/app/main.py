@@ -3,10 +3,13 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.database import init_db
+from app.errors import http_error, server_error, validation_error
 from app.routers import auth, home, movies, recommend, watchlist
 from app.catalog import load_catalog
 
@@ -49,6 +52,11 @@ app.include_router(home.router)
 app.include_router(movies.router)
 app.include_router(recommend.router)
 app.include_router(watchlist.router)
+
+# Pagine di errore con la grafica del sito (JSON per il JavaScript e per le API)
+app.add_exception_handler(HTTPException, http_error)
+app.add_exception_handler(RequestValidationError, validation_error)
+app.add_exception_handler(Exception, server_error)
 
 
 @app.get("/health")

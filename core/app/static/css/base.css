@@ -96,6 +96,31 @@ button {
   text-decoration: underline;
 }
 
+/* Pagina di errore (404, 500...): numero grande, una frase, il pulsante per tornare alla home */
+.error-page {
+  max-width: 480px;
+  margin: 3rem auto;
+  text-align: center;
+}
+
+.error-code {
+  margin: 0;
+  font-size: 5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.error-page h2 {
+  margin: 1rem 0 0.5rem;
+  font-size: 1.3rem;
+}
+
+.error-text {
+  margin: 0 0 2rem;
+  color: var(--text-muted);
+}
+
 /* ---------- Header ---------- */
 
 header {
@@ -192,6 +217,29 @@ header nav form {
   }
 
   .nav-button:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+}
+
+/* Stesso stile di "Register" nell'header: bordo arancio, al passaggio si riempie */
+.pill-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+@media (hover: hover) {
+  .pill-button:hover {
     background: var(--accent);
     color: var(--bg);
   }

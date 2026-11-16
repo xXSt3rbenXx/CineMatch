@@ -38,6 +38,14 @@ select {
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
+  transition: background 0.2s;
+}
+
+/* Al passaggio cambia colore (solo con il mouse) */
+@media (hover: hover) {
+  select:hover {
+    background: var(--surface-hover);
+  }
 }
 
 select::picker-icon {
@@ -59,6 +67,28 @@ select:open::picker-icon {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* La tendina compare e scompare con una dissolvenza (solo nei browser che la supportano) */
+::picker(select) {
+  opacity: 0;
+  transition: opacity 0.2s, display 0.2s allow-discrete, overlay 0.2s allow-discrete;
+}
+
+select:open::picker(select) {
+  opacity: 1;
+}
+
+@starting-style {
+  select:open::picker(select) {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::picker(select) {
+    transition: none;
+  }
 }
 
 option {
@@ -156,6 +186,27 @@ option::checkmark {
   display: none;
 }
 
+/* L'elenco compare e sparisce con una dissolvenza */
+.suggestions {
+  transition: opacity 0.15s;
+}
+
+.suggestions.closing {
+  opacity: 0;
+}
+
+@starting-style {
+  .suggestions {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .suggestions {
+    transition: none;
+  }
+}
+
 .suggestions a {
   display: block;
   padding: 0.5rem;
@@ -163,6 +214,8 @@ option::checkmark {
   text-decoration: none;
 }
 
-.suggestions a:hover {
+/* .active: il suggerimento scelto con le frecce, uguale a quello sotto il mouse */
+.suggestions a:hover,
+.suggestions a.active {
   background: var(--surface-hover);
 }

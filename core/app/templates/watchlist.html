@@ -36,6 +36,9 @@
         {% endfor %}
       </select>
 
+      {# Sotto i 850px manda a capo qui: 3 filtri sopra e 2 sotto #}
+      <span class="filters-break"></span>
+
       <select id="decade" name="decade" class="{{ 'active' if decade }}" aria-label="Decade" onchange="this.form.submit()">
         <option value="">Any decade</option>
         {% for d in decades %}

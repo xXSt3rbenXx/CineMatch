@@ -12,6 +12,9 @@ templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
 # Restituisce l'utente della sessione, oppure None se non è loggato o non esiste più
 def get_current_user(request: Request):
+    # Nella pagina dell'errore 500 la sessione non c'è: l'header si mostra come da non loggati
+    if "session" not in request.scope:
+        return None
     user_id = request.session.get("user_id")
     if user_id is None:
         return None

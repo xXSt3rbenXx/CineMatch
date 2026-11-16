@@ -13,6 +13,20 @@
   margin: 0 0 1rem;
 }
 
+/* Interruzione invisibile: su schermi larghi non c'è, i 5 filtri stanno su una riga */
+.filters-break {
+  display: none;
+}
+
+/* Quando i 5 filtri rischiano di non starci, 3 sopra e 2 sotto, centrati */
+@media (max-width: 850px) {
+  .filters-break {
+    display: block;
+    flex-basis: 100%;
+    height: 0;
+  }
+}
+
 /* Filtro diverso da "tutti": bordo arancio, per vedere subito cosa si sta filtrando */
 .filters select.active {
   border-color: var(--accent);
@@ -52,37 +66,11 @@
   gap: 0.75rem;
 }
 
-/* Stesso stile di "Register" nell'header: bordo arancio, al passaggio si riempie */
-.pill-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--accent);
-  border-radius: 999px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--accent);
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-}
-
-@media (hover: hover) {
-  .pill-button:hover {
-    background: var(--accent);
-    color: var(--bg);
-  }
-}
-
 /* ---------- Schermi piccoli ---------- */
 
 @media (max-width: 600px) {
-  /* 3 colonne (3 filtri sopra, 2 sotto), griglia centrata */
+  /* Su telefono la disposizione 3 + 2 resta, solo più compatta */
   .filters {
-    display: grid;
-    grid-template-columns: repeat(3, auto);
-    justify-content: center;
     gap: 0.5rem;
   }
 
@@ -102,5 +90,25 @@
   .pill-button {
     justify-content: center;
     padding: 0.75rem 1rem;
+  }
+}
+
+/* Telefoni stretti: con i valori lunghi (es. "Science Fiction") tre filtri non stanno in una riga.
+   Griglia a 2 colonne, 2 + 2 + 1: i filtri della stessa colonna larghi uguali, l'ultimo centrato */
+@media (max-width: 480px) {
+  .filters {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    justify-content: center;
+  }
+
+  /* In griglia l'interruzione non serve: le righe le fanno le colonne */
+  .filters-break {
+    display: none;
+  }
+
+  .filters select:last-of-type {
+    grid-column: 1 / -1;
+    justify-self: center;
   }
 }
