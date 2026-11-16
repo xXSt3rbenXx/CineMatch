@@ -14,8 +14,10 @@
   <link rel="stylesheet" href="/static/css/dialogs.css">
   <link rel="stylesheet" href="/static/css/watchlist.css">
   <link rel="icon" type="image/png" href="/static/img/icona.png">
-  <script src="/static/watchlist.js" defer></script>
-  <script src="/static/search.js" defer></script>
+  {# Script in quest'ordine: cards.js usa ui.js, search.js usa removeCard() di cards.js #}
+  <script src="/static/js/ui.js" defer></script>
+  <script src="/static/js/cards.js" defer></script>
+  <script src="/static/js/search.js" defer></script>
 </head>
 
 <body>
@@ -82,7 +84,7 @@
     </div>
   </dialog>
 
-  {# Messaggio temporaneo in basso ("toast"): lo riempie e lo mostra showToast() in watchlist.js #}
+  {# Messaggio temporaneo in basso ("toast"): lo riempie e lo mostra showToast() in ui.js #}
   <div id="toast" role="status" aria-live="polite"></div>
 
   {# Citazione richiesta dalle regole di TMDB, che ci fornisce le locandine #}
