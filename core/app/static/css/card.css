@@ -199,6 +199,7 @@
   border-radius: var(--radius);
   background: var(--bg);
   cursor: zoom-in;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .poster[src$="poster-placeholder.svg"] {
@@ -298,6 +299,12 @@
   .heart:hover,
   .check:hover {
     background: var(--surface-hover);
+  }
+  
+  /* La locandina si solleva un po' */
+  .poster:not([src$="poster-placeholder.svg"]):hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
   }
 }
 

@@ -24,9 +24,9 @@ def test_add_requires_login_fetch(client):
 def test_add_and_remove(client):
     login_user(client)
     assert client.post("/watchlist/add", data={"movie_id": 11}, headers=FETCH).json() == {"saved": True}
-    assert "Remove from watchlist" in client.get("/?movie=11").text  # cuore pieno
+    assert "Remove from watchlist" in client.get("/watchlist?movie=11").text  # cuore pieno
     assert client.post("/watchlist/remove", data={"movie_id": 11}, headers=FETCH).json() == {"saved": False}
-    assert "Add to watchlist" in client.get("/?movie=11").text  # cuore vuoto
+    assert "Add to watchlist" in client.get("/watchlist?movie=11").text  # cuore vuoto
 
 
 # Dopo il clic dal form si torna alla pagina di partenza

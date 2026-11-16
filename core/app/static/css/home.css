@@ -1,0 +1,215 @@
+/* Home: logo con motto e modalità di consiglio */
+
+/* ---------- Hero ---------- */
+
+.hero {
+  margin: 1.5rem auto 3rem;
+  text-align: center;
+}
+
+/* Su schermi stretti il logo si restringe con la pagina */
+.hero img {
+  width: 420px;
+  max-width: 100%;
+  height: auto;
+}
+
+
+/* ---------- Modalità ---------- */
+
+.modes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Stesso aspetto delle schede dei film */
+.mode-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1.5rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  text-align: center;
+  text-decoration: none;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.mode-icon {
+  display: flex;
+  padding: 0.75rem;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  color: var(--accent);
+  transition: background 0.2s, color 0.2s;
+}
+
+.mode-icon .icon {
+  width: 26px;
+  height: 26px;
+}
+
+.mode-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.mode-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.mode-desc {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+/* Stesso "salto" delle schede dei film, solo con il mouse */
+@media (hover: hover) {
+  .mode-card:hover {
+    border-color: var(--text-faint);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+  /* Il cerchio si riempie, come il pulsante "Register" */
+  .mode-card:hover .mode-icon {
+    background: var(--accent);
+    color: var(--bg);
+  }
+}
+
+/* ---------- Come funziona ---------- */
+
+.how {
+  max-width: 900px;
+  margin: 4rem auto 0;
+  text-align: center;
+}
+
+.how h2 {
+  margin: 0 0 2rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.how-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.how-steps li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+}
+
+/* Linea che lega i passi */
+.how-steps li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 1rem;
+  left: calc(50% + 1.5rem);
+  width: calc(100% - 1rem);
+  border-top: 1px solid var(--text-faint);
+}
+
+.how-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.how-title {
+  font-weight: 600;
+}
+
+.how-steps p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* ---------- Schermi piccoli ---------- */
+
+/* Schede una sotto l'altra, in orizzontale: icona a sinistra, testo a destra */
+@media (max-width: 600px) {
+  .hero {
+    margin: 0.5rem auto 2rem;
+  }
+
+  .modes {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .mode-card {
+    flex-direction: row;
+    gap: 1rem;
+    padding: 1rem;
+    text-align: left;
+  }
+
+  .mode-icon {
+    flex-shrink: 0;
+  }
+
+  .how {
+    margin-top: 3rem;
+  }
+
+  .how-steps {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  /* Timeline: cerchietto a sinistra, titolo e descrizione a destra */
+  .how-steps li {
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    grid-template-rows: 2rem auto;
+    column-gap: 1rem;
+    row-gap: 0.25rem;
+    text-align: left;
+  }
+
+  /* Il titolo sta a metà altezza del cerchietto */
+  .how-title {
+    align-self: center;
+  }
+
+  .how-steps p {
+    grid-column: 2;
+  }
+
+  /* La linea diventa verticale */
+  .how-steps li:not(:last-child)::after {
+    top: 2.5rem;
+    left: 1rem;
+    width: 0;
+    height: calc(100% - 1.5rem);
+    border-top: none;
+    border-left: 1px solid var(--text-faint);
+  }
+}

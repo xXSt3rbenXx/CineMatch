@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block header_title %}<span class="page-title">What do you like?</span>{% endblock %}
+
+{% block content %}
+  <label for="search" class="search-label">Pick a movie you like: we'll find similar ones</label>
+  {% include "partials/search.html" %}
+  {% if movie %}
+    <div class="selected-movie">{% include "partials/movie_card.html" %}</div>
+  {% elif movie_id %}
+    <p class="notice">Movie not found.</p>
+  {% endif %}
+{% endblock %}

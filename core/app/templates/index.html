@@ -1,18 +1,70 @@
 {% extends "base.html" %}
 
-{% block content %}
+{# Da loggati, il saluto compare nell'header accanto al logo, come il titolo della watchlist #}
+{% block header_title %}
   {% set user = get_current_user(request) %}
   {% if user %}
-    <p>Welcome, {{ user["username"] }}.</p>
-  {% else %}
-    <p>Welcome to CineMatch. <a href="/login">Log in</a> or <a href="/register">register</a> to save your own watchlist.</p>
+    <span class="page-title"><span class="page-owner">Welcome, <span class="page-user">{{ user["username"] }}</span></span></span>
   {% endif %}
+{% endblock %}
 
-  {% include "partials/search.html" %}
+{% block content %}
+  {# Il motto è disegnato dentro l'SVG: l'alt lo ripete per chi non vede l'immagine #}
+  <section class="hero">
+    <img src="/static/img/logo-con-motto-per-sfondo-scuro.svg" alt="CineMatch: the right movie, right now">
+  </section>
 
-  {% if movie %}
-    <div class="selected-movie">{% include "partials/movie_card.html" %}</div>
-  {% elif movie_id %}
-    <p class="notice">Movie not found.</p>
-  {% endif %}
+  {# Le tre modalità: ogni scheda è tutta un link #}
+  {% set user = get_current_user(request) %}
+  <nav class="modes" aria-label="Modes">
+    <a href="/similar" class="mode-card">
+      <span class="mode-icon">{{ icon("clapper") }}</span>
+      <span class="mode-text">
+        <span class="mode-title">What do you like?</span>
+        <span class="mode-desc">Pick a movie you love and discover similar ones.</span>
+      </span>
+    </a>
+
+    <a href="/feeling-lucky" class="mode-card">
+      <span class="mode-icon">{{ icon("dice") }}</span>
+      <span class="mode-text">
+        <span class="mode-title">Feeling lucky</span>
+        <span class="mode-desc">Answer a few quick questions and find a movie for tonight.</span>
+      </span>
+    </a>
+
+    {# Da non loggati porta al login, che poi riporta alla watchlist #}
+    <a href="{{ '/watchlist' if user else '/login?next_url=/watchlist' }}" class="mode-card">
+      <span class="mode-icon">{{ icon("heart") }}</span>
+      <span class="mode-text">
+        <span class="mode-title">My Watchlist</span>
+        <span class="mode-desc">
+          {{ "Keep track of the movies you want to watch." if user else "Log in to save the movies you want to watch." }}
+        </span>
+      </span>
+    </a>
+  </nav>
+
+  {# Come funziona: tre passi, volutamente meno in evidenza delle schede #}
+  <section class="how">
+    <h2>How CineMatch works</h2>
+    <ol class="how-steps">
+      <li>
+        <span class="how-number">1</span>
+        <span class="how-title">Tell us what you want</span>
+        <p>Pick a movie you like, or answer a few quick questions.</p>
+      </li>
+      <li>
+        <span class="how-number">2</span>
+        <span class="how-title">We find the match</span>
+        <p>We compare plot, genres and mood across the whole catalog.</p>
+      </li>
+      <li>
+        <span class="how-number">3</span>
+        <span class="how-title">Save it for later</span>
+        <p>Add the ones you like to your watchlist and mark them as watched.</p>
+      </li>
+    </ol>
+  </section>
+
 {% endblock %}

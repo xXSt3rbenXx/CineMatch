@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.database import init_db
-from app.routers import auth, home, movies, watchlist
+from app.routers import auth, home, movies, recommend, watchlist
 from app.catalog import load_catalog
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -47,6 +47,7 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 app.include_router(auth.router)
 app.include_router(home.router)
 app.include_router(movies.router)
+app.include_router(recommend.router)
 app.include_router(watchlist.router)
 
 
