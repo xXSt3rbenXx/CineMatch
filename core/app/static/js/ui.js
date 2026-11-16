@@ -58,3 +58,19 @@ document.getElementById("confirm-dialog")?.addEventListener("click", (event) => 
   if (button) closeDialog(dialog, button.dataset.value);
   else if (event.target === dialog) closeDialog(dialog, "cancel");
 });
+
+// Menu del profilo: si chiude anche cliccando fuori o con Esc, come nei menu dei siti
+const profileMenu = document.querySelector(".profile-menu");
+if (profileMenu) {
+  document.addEventListener("click", (event) => {
+    if (profileMenu.open && !profileMenu.contains(event.target)) profileMenu.open = false;
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && profileMenu.open) {
+      profileMenu.open = false;
+      // Da tastiera si resta sull'icona del profilo, invece di perdere il punto in cui si era
+      profileMenu.querySelector("summary").focus();
+    }
+  });
+}

@@ -61,7 +61,11 @@
   {# Contatore: gli span con id servono al JavaScript per aggiornare i numeri senza ricaricare #}
   {% if total %}
     <p class="watchlist-count">
-      Movies: <span id="count-total">{{ total }}</span> · Watched: <span id="count-watched">{{ watched_count }}</span>
+      {% if filtered %}
+        Showing <span id="count-shown">{{ movies|length }}</span> of <span id="count-total">{{ total }}</span> movies{% if not status %} · <span id="count-watched">{{ watched_count }}</span> watched{% endif %}
+      {% else %}
+        <span id="count-total">{{ total }}</span> movies · <span id="count-watched">{{ watched_count }}</span> watched
+      {% endif %}
     </p>
   {% endif %}
 
@@ -74,7 +78,17 @@
     </div>
 
   {% elif not genres %}
-    <p class="notice">Your watchlist is empty. <label for="search">Search a movie</label> above and click the heart to save it.</p>
+    {# Lista vuota: una frase corta e tre modi per trovare film da salvare #}
+    <div class="empty-state">
+      <p class="empty-title">Your watchlist is empty</p>
+      <p class="empty-text">Find something to watch and save it here.</p>
+      <div class="empty-actions">
+        {# La label porta il cursore nella casella di ricerca qui sopra #}
+        <label for="search" class="pill-button">{{ icon("search") }} Search a movie</label>
+        <a href="/similar" class="pill-button">{{ icon("clapper") }} What do you like?</a>
+        <a href="/feeling-lucky" class="pill-button">{{ icon("dice") }} Feeling lucky</a>
+      </div>
+    </div>
   {% else %}
     <p class="notice">No saved movies match these filters. <a href="/watchlist">Clear filters</a></p>
   {% endif %}

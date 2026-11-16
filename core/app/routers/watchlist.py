@@ -89,7 +89,7 @@ def watchlist_page(
     # Dati dei film salvati, saltando quelli che non esistono più nel catalogo
     movies = [m for m in (get_movie(movie_id) for movie_id in ids) if m is not None]
 
-    # Numeri per il contatore in cima alla pagina: tutta la watchlist, prima dei filtri
+    # Numeri per il contatore: tutta la watchlist (con un filtro attivo, i visti si ricontano più sotto)
     total = len(movies)
     watched_count = sum(1 for m in movies if m["id"] in watched_ids)
 
@@ -110,6 +110,12 @@ def watchlist_page(
 
     movies = apply_filters(movies, watched_ids, genre, decade, runtime, status)
     movies = sort_movies(movies, sort)
+
+    # Con un filtro attivo il contatore parla dei film mostrati ("Showing 3 of 42 movies · 1 watched").
+    # L'ordinamento non conta: cambia l'ordine, non quanti film si vedono
+    filtered = any([genre, decade, runtime, status])
+    if filtered:
+        watched_count = sum(1 for m in movies if m["id"] in watched_ids)
 
     # Film scelto dalla ricerca in cima alla pagina (?movie=id), per poterlo aggiungere
     selected = get_movie(movie) if movie is not None else None
@@ -134,6 +140,7 @@ def watchlist_page(
             "status_options": STATUS_OPTIONS,
             "total": total,
             "watched_count": watched_count,
+            "filtered": filtered,
             "movie": selected,
             "movie_id": movie,
         },

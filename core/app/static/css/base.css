@@ -36,6 +36,15 @@ main {
   padding: 2rem;
 }
 
+/* Passando da una pagina all'altra del sito, la vecchia sfuma nella nuova invece di scattare.
+   Solo nei browser che lo supportano (Chrome, Edge, Safari); gli altri ricaricano come sempre.
+   Chi ha chiesto al sistema di ridurre le animazioni non la vede */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+
 a {
   color: var(--text);
 }
@@ -96,6 +105,14 @@ header {
   padding: 1rem 2rem;
   background: var(--surface);
   gap: 1rem;
+
+  /* Nome per la dissolvenza tra pagine: l'header resta al suo posto invece di sfumare con il resto */
+  view-transition-name: site-header;
+
+  /* view-transition-name crea un livello a sé: senza questo, la tendina del profilo
+  resterebbe sotto gli elementi della pagina (es. la casella di ricerca) */
+  position: relative;
+  z-index: 30;
 }
 
 header h1 {
@@ -140,13 +157,13 @@ header h1 a {
   white-space: nowrap;
 }
 
-nav {
+header nav {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-nav form {
+header nav form {
   max-width: none;
 }
 
@@ -215,40 +232,66 @@ nav form {
   min-width: 110px;
   padding: 0.4rem;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--text-faint);
   border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
+/* Il menu compare e scompare con una dissolvenza (solo nei browser recenti; negli altri di colpo) */
+.profile-menu::details-content {
+  opacity: 0;
+  transition: opacity 0.2s, content-visibility 0.2s allow-discrete;
+}
+
+.profile-menu[open]::details-content {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-menu::details-content {
+    transition: none;
+  }
+}
+
+/* Voci del menu: niente pallini, al passaggio il testo diventa arancio come "Log in" nell'header */
 .profile-items {
   margin: 0;
-  padding-left: 1.1rem;
+  padding: 0;
+  list-style: none;
 }
 
-.profile-items li {
-  margin: 0.25rem 0;
-  font-size: 0.9rem;
-}
-
-/* Il logout è un pulsante (POST), ma deve sembrare un link come le altre voci */
+/* Il logout è un pulsante (POST), ma deve sembrare una voce come le altre.
+   border-box: il padding sta dentro la larghezza, così la voce non esce dal riquadro */
 .profile-items a,
 .profile-items button {
-  padding: 0;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.35rem 0.6rem;
   border: none;
   background: none;
   font: inherit;
+  font-size: 0.9rem;
   color: var(--text);
   text-align: left;
   text-decoration: none;
+  white-space: nowrap;
   cursor: pointer;
+  transition: color 0.2s;
 }
 
 .profile-items a:hover,
 .profile-items button:hover {
-  text-decoration: underline;
+  color: var(--accent);
 }
 
-.profile-items form {
-  display: inline;
+/* Col dito servono voci più grandi (circa 44px di altezza, come consigliano Apple e Google) */
+@media (pointer: coarse) {
+  .profile-items a,
+  .profile-items button {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
 }
 
 /* ---------- Footer ---------- */
@@ -299,8 +342,24 @@ footer a {
     height: 26px;
   }
 
+  /* Il titolo accanto al logo cede spazio per primo: si taglia con i puntini
+     invece di spingere l'icona del profilo fuori dallo schermo */
+  .brand {
+    min-width: 0;
+    gap: 0.75rem;
+  }
+
   .page-title {
+    min-width: 0;
+    padding-left: 0.75rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-size: 0.95rem;
+  }
+
+  header nav {
+    flex-shrink: 0;
   }
 
   /* Su telefono lo spazio non basta per 14 caratteri larghi: i nomi molto larghi si tagliano */

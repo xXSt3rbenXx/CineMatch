@@ -29,7 +29,13 @@
   <header>
 
     <h1 class="brand">
-      <a href="/"><img src="/static/img/logo-per-sfondo-scuro.svg" alt="CineMatch" class="logo"></a>
+      <a href="/">
+        {# Su telefono solo il simbolo, per lasciare spazio al titolo della pagina #}
+        <picture>
+          <source media="(max-width: 600px)" srcset="/static/img/simbolo.svg">
+          <img src="/static/img/logo-per-sfondo-scuro.svg" alt="CineMatch" class="logo">
+        </picture>
+      </a>
       {# Ogni pagina può aggiungere il suo titolo accanto al logo (es. la watchlist) #}
       {% block header_title %}{% endblock %}
     </h1>

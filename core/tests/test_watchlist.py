@@ -177,14 +177,28 @@ def test_check_only_in_watchlist(client):
     assert "Mark as watched" not in client.get("/?movie=11").text
 
 
-# Il contatore conta tutta la watchlist, anche quando un filtro ne mostra solo una parte
+# Senza filtri il contatore conta tutta la watchlist
 def test_counter(client):
     login_user(client)
     save_test_movies(client)
     set_watched(client, 808, 1)
-    text = client.get("/watchlist", params={"genre": "Animation"}).text
+    set_watched(client, 11, 1)
+    text = client.get("/watchlist").text
     assert '<span id="count-total">4</span>' in text
-    assert '<span id="count-watched">1</span>' in text
+    assert '<span id="count-watched">2</span>' in text
+    assert "count-shown" not in text
+
+
+# Con un filtro conta i film mostrati, su quanti sono in tutto
+def test_counter_with_filter(client):
+    login_user(client)
+    save_test_movies(client)
+    set_watched(client, 808, 1)  # Shrek: animazione, visto
+    set_watched(client, 11, 1)   # Star Wars: visto, ma non è animazione
+    text = client.get("/watchlist", params={"genre": "Animation"}).text
+    assert '<span id="count-shown">1</span>' in text
+    assert '<span id="count-total">4</span>' in text
+    assert '<span id="count-watched">1</span>' in text  # solo Shrek: Star Wars è fuori dal filtro
 
 
 # La ricerca nella watchlist mostra la scheda del film scelto, col cuore per salvarlo e senza ✓

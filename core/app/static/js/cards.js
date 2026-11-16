@@ -72,6 +72,7 @@ document.addEventListener("submit", async (event) => {
   const list = form.closest(".watchlist-list");
   if (!saved && list) {
     bumpCount("count-total", -1);
+    bumpCount("count-shown", -1);  // c'è solo con un filtro attivo; senza, non fa nulla
     if (card.querySelector(".check.watched")) bumpCount("count-watched", -1);
     removeCard(card, list);
     return;
@@ -118,6 +119,7 @@ document.addEventListener("submit", async (event) => {
   const list = form.closest(".watchlist-list");
   const status = list ? list.dataset.status : "";
   if ((status === "watched" && !watched) || (status === "to_watch" && watched)) {
+    bumpCount("count-shown", -1);
     removeCard(form.closest(".movie-card"), list);
   }
 });

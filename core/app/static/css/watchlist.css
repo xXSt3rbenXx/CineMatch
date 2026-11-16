@@ -22,6 +22,57 @@
   margin: 0 0 1.5rem;
   text-align: center;
   color: var(--text-muted);
+  /* Cambiando filtro, la frase si trasforma nella nuova invece di sostituirla di colpo */
+  view-transition-name: watchlist-count;
+}
+
+
+/* ---------- Watchlist vuota ---------- */
+
+.empty-state {
+  margin: 2.5rem auto;
+  text-align: center;
+}
+
+.empty-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.empty-text {
+  margin: 0.4rem 0 1.5rem;
+  color: var(--text-muted);
+}
+
+.empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+/* Stesso stile di "Register" nell'header: bordo arancio, al passaggio si riempie */
+.pill-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+@media (hover: hover) {
+  .pill-button:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
 }
 
 /* ---------- Schermi piccoli ---------- */
@@ -38,5 +89,18 @@
   .filters select {
     padding: 0.4rem 0.5rem;
     font-size: 0.8rem;
+  }
+  
+  /* Pulsanti uno sotto l'altro, larghi uguali e comodi da toccare */
+  .empty-actions {
+    flex-direction: column;
+    align-items: stretch;
+    max-width: 280px;
+    margin: 0 auto;
+  }
+
+  .pill-button {
+    justify-content: center;
+    padding: 0.75rem 1rem;
   }
 }
