@@ -1,0 +1,236 @@
+/* =========================================================
+   BASE: colori, regole generali, header, footer
+   Si carica per primo: gli altri file si appoggiano a questo.
+   ========================================================= */
+
+/* ---------- Colori e misure (cambiandoli qui cambia tutta l'app) ---------- */
+
+:root {
+  --bg: #0F1020;            /* blu notte: sfondo della pagina */
+  --surface: #1A1C33;       /* blu più chiaro: header, schede, campi, menu */
+  --surface-hover: #25284A; /* superfici al passaggio del mouse */
+  --border: #2E3150;        /* bordi sottili */
+  --text: #F4F1EA;          /* avorio: testo principale */
+  --text-muted: #A9ABBD;    /* grigio-lavanda: testi secondari */
+  --text-faint: #4A4D6A;    /* elementi spenti (es. ✓ non ancora visto) */
+  --accent: #F04A23;        /* rosso-arancio: cuore, pulsanti, evidenze */
+  --success: #3FB950;       /* verde del ✓ "visto" e dei toast di conferma */
+  --error: #FF6B6B;         /* messaggi di errore */
+  --radius: 8px;            /* angoli arrotondati */
+}
+
+/* ---------- Regole generali ---------- */
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+main {
+  padding: 2rem;
+}
+
+a {
+  color: var(--text);
+}
+
+button {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.error {
+  color: var(--error);
+}
+
+/* Niente riquadro blu del browser quando si tocca qualcosa sul telefono: il riscontro lo danno già i nostri stili */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Navigando con la tastiera (Tab) l'elemento selezionato ha un contorno arancio; col mouse non compare */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Messaggi nella pagina (lista vuota, nessun risultato, film non trovato...) */
+.notice {
+  margin: 2.5rem 0;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.notice a,
+.notice label {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.notice a:hover,
+.notice label:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Header ---------- */
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: var(--surface);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+header h1 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Logo a sinistra e, se la pagina lo prevede, il suo titolo separato da una linea sottile */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo {
+  display: block;
+  height: 32px;
+}
+
+.page-title {
+  padding-left: 1rem;
+  border-left: 1px solid var(--border);
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+nav form {
+  max-width: none;
+}
+
+/* ---------- Menu del profilo ---------- */
+
+/* Icona tonda del profilo; la tendina piccola si apre sotto, allineata a destra */
+.profile-menu {
+  position: relative;
+}
+
+.profile-menu summary {
+  display: flex;
+  padding: 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  list-style: none;
+  cursor: pointer;
+}
+
+.profile-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 20;
+  min-width: 110px;
+  padding: 0.4rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.profile-name {
+  margin: 0 0 0.4rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* Voci del menu: link e logout hanno lo stesso aspetto */
+.profile-items {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.profile-items li {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+.profile-items a,
+.profile-items button {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--text);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.profile-items a:hover,
+.profile-items button:hover {
+  text-decoration: underline;
+}
+
+.profile-items form {
+  display: inline;
+}
+
+/* ---------- Footer ---------- */
+
+footer {
+  margin-top: 3rem;
+  padding: 1rem 2rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+footer a {
+  color: var(--text-muted);
+}
+
+/* ---------- Schermi piccoli (telefoni e finestre strette) ---------- */
+
+@media (max-width: 600px) {
+  /* Margini più stretti per lasciare spazio al contenuto */
+  header {
+    padding: 0.75rem 1rem;
+  }
+
+  main {
+    padding: 1rem;
+  }
+
+  footer {
+    padding: 1rem;
+  }
+
+  .logo {
+    height: 26px;
+  }
+
+  .page-title {
+    font-size: 0.95rem;
+  }
+}

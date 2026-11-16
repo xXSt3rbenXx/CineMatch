@@ -1,0 +1,152 @@
+/* =========================================================
+   FORM: campi di testo, menu a tendina, ricerca con suggerimenti
+   ========================================================= */
+
+/* ---------- Form e campi (login, registrazione, filtri) ---------- */
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 320px;
+}
+
+input,
+select {
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* Nei campi di testo e nei menu il bordo stesso diventa arancio quando ci stai scrivendo o scegliendo */
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* ---------- Menu a tendina personalizzati ---------- */
+
+/* Funzionano su Chrome ed Edge recenti; negli altri browser resta il menu di sistema */
+select,
+::picker(select) {
+  appearance: base-select;
+}
+
+select {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+/* La freccetta: gira quando il menu è aperto */
+select::picker-icon {
+  color: var(--text-muted);
+  transition: rotate 0.2s;
+}
+
+select:open::picker-icon {
+  rotate: 180deg;
+}
+
+/* La tendina: stesso stile dei menu del sito, altezza massima con scorrimento (es. tanti generi) */
+::picker(select) {
+  margin-top: 0.3rem;
+  padding: 0.3rem;
+  max-height: 18rem;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+option {
+  padding: 0.4rem 0.7rem;
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+option:hover {
+  background: var(--surface-hover);
+}
+
+/* La voce scelta è arancio con testo blu notte */
+option:checked {
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+option::checkmark {
+  display: none;
+}
+
+/* ---------- Ricerca con suggerimenti ---------- */
+
+/* Scritta sopra la casella di ricerca, centrata come la casella */
+.search-label {
+  display: block;
+  max-width: 480px;
+  margin: 0 auto 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.search {
+  position: relative;
+  max-width: 480px;
+  margin: 0 auto 1.5rem;
+}
+
+.search input {
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 2rem;
+}
+
+/* La X per togliere il film scelto, dentro la casella a destra */
+.search .clear {
+  position: absolute;
+  top: 50%;
+  right: 0.6rem;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+/* I suggerimenti compaiono sovrapposti sotto la casella */
+.suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.suggestions:empty {
+  display: none;
+}
+
+.suggestions a {
+  display: block;
+  padding: 0.5rem;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.suggestions a:hover {
+  background: var(--surface-hover);
+}

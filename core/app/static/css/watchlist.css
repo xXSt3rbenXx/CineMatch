@@ -1,0 +1,48 @@
+/* =========================================================
+   PAGINA DELLA WATCHLIST: scheda scelta con la ricerca,
+   filtri, contatore
+   ========================================================= */
+
+/* Scheda del film scelto dalla ricerca, sopra i filtri */
+.selected-movie {
+  margin-bottom: 1.5rem;
+}
+
+/* Filtri centrati su una riga (vanno a capo se lo schermo è stretto) */
+.filters {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  max-width: none;
+  margin: 0 0 1rem;
+}
+
+/* Un filtro attivo (diverso da "tutti") ha il bordo arancio, per vedere subito cosa stai filtrando */
+.filters select.active {
+  border-color: var(--accent);
+}
+
+/* Contatore centrato sotto i filtri */
+.watchlist-count {
+  margin: 0 0 1.5rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* ---------- Schermi piccoli (telefoni e finestre strette) ---------- */
+
+@media (max-width: 600px) {
+  /* Filtri: griglia di 3 colonne (3 sopra, 2 sotto), allineati a sinistra e centrati nella pagina */
+  .filters {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .filters select {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.8rem;
+  }
+}

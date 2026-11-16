@@ -1,0 +1,188 @@
+/* =========================================================
+   SOPRA LA PAGINA: toast, visore della locandina,
+   finestra di conferma
+   ========================================================= */
+
+/* ---------- Toast (messaggio temporaneo in basso al centro) ---------- */
+
+/* Nascosto finché non ha la classe "visible": allora sale e compare */
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  z-index: 50;
+  max-width: calc(100vw - 2rem);
+  padding: 0.6rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  font-size: 0.9rem;
+  color: var(--text);
+  opacity: 0;
+  transform: translate(-50%, 1rem);
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+#toast.visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* Toast di conferma (film aggiunto, segnato come visto): riga verde */
+#toast.success {
+  border-left-color: var(--success);
+}
+
+/* ---------- Animazioni di tutte le finestre ---------- */
+
+/* Le finestre (visore, conferma) compaiono e scompaiono con una dissolvenza, sfondo compreso.
+   La chiusura dura 0.3 s: lo stesso tempo che aspetta closeDialog() in watchlist.js */
+dialog[open],
+dialog[open]::backdrop {
+  animation: fade-in 0.2s ease;
+}
+
+dialog.closing,
+dialog.closing::backdrop {
+  animation: fade-out 0.3s ease forwards;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ---------- Visore della locandina a schermo intero ---------- */
+
+#poster-viewer {
+  padding: 0;
+  border: none;
+  background: none;
+  overflow: visible;
+}
+
+#poster-viewer::backdrop {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+/* Misura fissa: la versione media viene subito ingrandita, così all'arrivo della HD cambia solo la nitidezza.
+   92% dell'altezza dello schermo, ma senza superare il 92% della larghezza (92 x 1.5 = 138) */
+#poster-viewer img {
+  display: block;
+  width: auto;
+  height: min(92vh, 138vw);
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: var(--radius);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  clip-path: inset(0 round var(--radius));
+  cursor: zoom-out;
+  transition: filter 0.6s ease;
+}
+
+/* Finché arriva la versione HD l'immagine resta un po' sfocata, poi "mette a fuoco" */
+#poster-viewer img.loading {
+  filter: blur(6px);
+}
+
+/* La X in alto a destra, appoggiata sull'angolo della locandina */
+.viewer-close {
+  position: absolute;
+  top: -0.9rem;
+  right: -0.9rem;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.viewer-close .icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* ---------- Finestra di conferma ---------- */
+
+/* Riquadro al centro, nello stile delle schede */
+#confirm-dialog {
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
+#confirm-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.confirm-box {
+  max-width: min(85vw, 360px);
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+}
+
+#confirm-message {
+  margin: 0 0 1.25rem;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.confirm-actions button {
+  padding: 0.45rem 1.2rem;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.confirm-cancel {
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--text);
+}
+
+.confirm-ok {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* ---------- Effetti al passaggio del mouse ---------- */
+
+/* Solo con un mouse vero: sul telefono resterebbero "accesi" dopo il tocco */
+@media (hover: hover) {
+  .viewer-close:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+  }
+
+  .confirm-cancel:hover {
+    background: var(--surface-hover);
+  }
+}

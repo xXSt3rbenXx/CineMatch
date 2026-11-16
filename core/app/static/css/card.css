@@ -1,0 +1,343 @@
+/* =========================================================
+   SCHEDA DEL FILM: chiusa (titolo, dati, generi) e aperta
+   (locandina, regista, voto, sinossi)
+   ========================================================= */
+
+/* ---------- Il riquadro ---------- */
+
+/* Un riquadro più chiaro dello sfondo; interpolate-size serve all'animazione di apertura */
+.movie-card {
+  margin-bottom: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  interpolate-size: allow-keywords;
+  transition: opacity 0.5s, transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Quando viene tolta dalla watchlist sfuma e scivola un po' a destra */
+.movie-card.removing {
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity 0.5s, transform 0.5s;
+}
+
+/* Se è selezionata da tastiera la parte alta, il contorno va attorno a tutta la scheda */
+.movie-card summary:focus-visible {
+  outline: none;
+}
+
+.movie-card:has(> summary:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- Parte alta, sempre visibile (cliccandola la scheda si apre e si chiude) ---------- */
+
+.movie-card summary {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.9rem 6.5rem 0.9rem 1rem;
+  list-style: none;
+  cursor: pointer;
+}
+
+.movie-card summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Riga 1: titolo, anno e durata (vanno a capo solo se lo spazio non basta) */
+.card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 1rem;
+}
+
+.card-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+/* Anno e durata viaggiano insieme: o entrambi accanto al titolo, o entrambi a capo */
+.card-meta {
+  display: inline-flex;
+  gap: 1rem;
+  white-space: nowrap;
+}
+
+.meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* Riga 2: i generi come pillole */
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chip {
+  padding: 0.15rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ---------- Pulsanti "Details" e "Close" ---------- */
+
+/* "Details" (scheda chiusa) e "Close" (in fondo alla scheda aperta): pillola col bordo arancio */
+.card-toggle,
+.card-close {
+  padding: 0.25rem 0.8rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: none;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.card-toggle {
+  position: absolute;
+  right: 1rem;
+  bottom: 0.8rem;
+}
+
+.card-toggle::after {
+  content: "Details";
+}
+
+/* Da aperta, il pulsante in alto sparisce: si chiude da quello in fondo (o cliccando la parte alta) */
+.movie-card[open] .card-toggle {
+  display: none;
+}
+
+/* ---------- ✓ e cuore, in alto a destra ---------- */
+
+.card-actions {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.card-actions form {
+  display: inline;
+}
+
+/* Pulsanti tondi con un'area di tocco comoda anche da telefono */
+.heart,
+.check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.heart .icon,
+.check .icon {
+  width: 22px;
+  height: 22px;
+}
+
+.heart {
+  color: var(--accent);
+}
+
+/* Salvato = cuore pieno */
+.heart.saved .icon {
+  fill: currentColor;
+}
+
+/* Grigio se da vedere, verde se già visto */
+.check {
+  color: var(--text-faint);
+}
+
+.check .icon {
+  stroke-width: 2.5;
+}
+
+.check.watched {
+  color: var(--success);
+}
+
+/* ---------- Scheda aperta: locandina a sinistra, dati a destra ---------- */
+
+.card-body {
+  display: flex;
+  align-items: stretch;
+  gap: 1.25rem;
+  padding: 0 1rem 1rem;
+}
+
+/* La locandina non si allunga con la colonna dei dati; cliccandola si apre a schermo intero */
+.poster {
+  flex-shrink: 0;
+  align-self: flex-start;
+  width: 160px;
+  height: auto;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: var(--bg);
+  cursor: zoom-in;
+}
+
+/* Il placeholder non si ingrandisce */
+.poster[src$="poster-placeholder.svg"] {
+  cursor: default;
+}
+
+/* La colonna dei dati è alta quanto la locandina, così il piè di scheda va in fondo */
+.card-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.card-info p {
+  margin: 0;
+}
+
+/* Righe con icona: regista e voto */
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.info-row strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Sinossi giustificata; la sillabazione evita i "buchi" tra le parole sulle righe strette */
+.overview {
+  line-height: 1.55;
+  text-align: justify;
+  hyphens: auto;
+}
+
+/* In fondo: link a TMDB a sinistra, "Close" a destra */
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: auto;
+}
+
+.tmdb-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.tmdb-link:hover {
+  color: var(--text);
+}
+
+/* ---------- Animazione di apertura e chiusura ---------- */
+
+/* Browser recenti; negli altri la scheda si apre di colpo, senza problemi */
+.movie-card::details-content {
+  block-size: 0;
+  overflow-y: clip;
+  transition: block-size 0.3s ease, content-visibility 0.3s allow-discrete;
+}
+
+.movie-card[open]::details-content {
+  block-size: auto;
+}
+
+/* Chi ha chiesto al sistema meno animazioni non le vede */
+@media (prefers-reduced-motion: reduce) {
+  .movie-card::details-content {
+    transition: none;
+  }
+}
+
+/* ---------- Effetti al passaggio del mouse ---------- */
+
+/* Solo con un mouse vero: sul telefono resterebbero "accesi" dopo il tocco */
+@media (hover: hover) {
+  /* La scheda chiusa "salta" un po' verso l'alto, con un'ombra sotto */
+  .movie-card:not([open]):not(.removing):hover {
+    border-color: var(--text-faint);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  }
+
+  .card-toggle:hover,
+  .card-close:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .heart:hover,
+  .check:hover {
+    background: var(--surface-hover);
+  }
+}
+
+/* ---------- Schermi piccoli (telefoni e finestre strette) ---------- */
+
+@media (max-width: 600px) {
+  /* Il pulsante diventa una riga a sé in fondo a destra, le pillole hanno tutta la larghezza */
+  .movie-card summary {
+    padding: 0.8rem 4.5rem 0.8rem 0.9rem;
+  }
+
+  .card-tags {
+    margin-right: -3.6rem;
+  }
+
+  .card-toggle {
+    position: static;
+    align-self: flex-end;
+    margin-right: -3.6rem;
+  }
+
+  .card-title {
+    font-size: 1.05rem;
+  }
+
+  /* Scheda aperta: locandina sopra e centrata, dati sotto a tutta larghezza */
+  .card-body {
+    flex-direction: column;
+  }
+
+  .poster {
+    align-self: center;
+    width: 150px;
+  }
+}
