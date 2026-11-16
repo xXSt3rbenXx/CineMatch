@@ -15,13 +15,14 @@ breaker = CircuitBreaker(failure_limit=3, cooldown_seconds=30)
 
 _cache = {}  # id del film -> percorso della locandina (None se non ce l'ha)
 
+
 # Costruisce il link dell'immagine; size è la larghezza (w185 piccola, w342 media, w500 grande)
 def _to_url(path: str | None, size: str) -> str | None:
     return IMAGE_BASE_URL + size + path if path else None
 
+
 # Restituisce il link della locandina, oppure None se non c'è o TMDB non risponde
 def get_poster_url(movie_id: int, size: str = "w185") -> str | None:
-    # Già chiesto in passato: rispondiamo dalla memoria
     if movie_id in _cache:
         return _to_url(_cache[movie_id], size)
 

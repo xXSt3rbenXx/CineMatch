@@ -1,5 +1,6 @@
 import time
 
+
 # Circuit Breaker riutilizzabile: dopo troppi errori di fila smette di chiamare
 # un servizio esterno per un po', poi fa un tentativo di prova (half-open)
 class CircuitBreaker:
@@ -19,11 +20,9 @@ class CircuitBreaker:
             return "half_open"
         return "open"
 
-    # Vero se possiamo chiamare il servizio
     def allow_request(self) -> bool:
         return self.state != "open"
 
-    # Chiamata riuscita: si torna alla normalità
     def record_success(self):
         self.failures = 0
         self.opened_at = None

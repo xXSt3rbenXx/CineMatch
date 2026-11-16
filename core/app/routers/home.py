@@ -7,6 +7,7 @@ from app.templating import get_current_user, templates
 
 router = APIRouter()
 
+
 # Home: casella di ricerca e, se è stato scelto un film (?movie=id), la sua scheda
 @router.get("/", response_class=HTMLResponse)
 def index(request: Request, movie: int | None = None):

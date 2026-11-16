@@ -12,15 +12,18 @@ from app.watchlist_filters import (
 
 router = APIRouter()
 
+
 # Vero se la richiesta arriva dal JavaScript (cuore e ✓), che vuole JSON invece di un redirect
 def wants_json(request: Request) -> bool:
     return request.headers.get("X-Requested-With") == "fetch"
+
 
 # Risposta per chi non ha fatto login: 401 al JavaScript, altrimenti rimando alla pagina di login
 def login_required(request: Request):
     if wants_json(request):
         return JSONResponse({"error": "login required"}, status_code=401)
     return RedirectResponse("/login", status_code=303)
+
 
 @router.post("/watchlist/add")
 def watchlist_add(request: Request, movie_id: int = Form(...), next_url: str = Form("/")):
@@ -33,6 +36,7 @@ def watchlist_add(request: Request, movie_id: int = Form(...), next_url: str = F
         return {"saved": True}
     return RedirectResponse(safe_next(next_url), status_code=303)
 
+
 @router.post("/watchlist/remove")
 def watchlist_remove(request: Request, movie_id: int = Form(...), next_url: str = Form("/")):
     user = get_current_user(request)
@@ -43,7 +47,8 @@ def watchlist_remove(request: Request, movie_id: int = Form(...), next_url: str 
         return {"saved": False}
     return RedirectResponse(safe_next(next_url), status_code=303)
 
-# Segna un film della watchlist come visto (watched=1) o da vedere (watched=0): il ✓ sulla scheda
+
+# Il ✓ sulla scheda: watched=1 visto, watched=0 da vedere
 @router.post("/watchlist/watched")
 def watchlist_watched(
     request: Request,
@@ -59,7 +64,7 @@ def watchlist_watched(
         return {"watched": watched}
     return RedirectResponse(safe_next(next_url), status_code=303)
 
-# Pagina del profilo con i film salvati
+
 @router.get("/watchlist", response_class=HTMLResponse)
 def watchlist_page(
     request: Request,

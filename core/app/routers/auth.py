@@ -9,11 +9,13 @@ from app.templating import templates
 
 router = APIRouter()
 
+
 @router.get("/register", response_class=HTMLResponse)
 def register_page(request: Request):
     return templates.TemplateResponse(
         request, "register.html", {"title": "Register", "error": None}
     )
+
 
 @router.post("/register", response_class=HTMLResponse)
 def register(request: Request, username: str = Form(...), password: str = Form(...)):
@@ -42,9 +44,10 @@ def register(request: Request, username: str = Form(...), password: str = Form(.
             status_code=400,
         )
 
-    # Registrazione riuscita: salviamo l'id nella sessione (utente già loggato)
+    # Dopo la registrazione l'utente è già loggato
     request.session["user_id"] = user_id
     return RedirectResponse("/", status_code=303)
+
 
 @router.get("/login", response_class=HTMLResponse)
 def login_page(request: Request, next_url: str = "/"):
@@ -54,6 +57,7 @@ def login_page(request: Request, next_url: str = "/"):
         "login.html",
         {"title": "Log in", "error": None, "next_url": safe_next(next_url)},
     )
+
 
 @router.post("/login", response_class=HTMLResponse)
 def login(
@@ -80,12 +84,13 @@ def login(
             status_code=401,
         )
 
-    # Login riuscito: svuota la sessione precedente e salva l'id dell'utente
+    # Svuotiamo la sessione prima di salvare l'utente: nessun dato di una sessione precedente sopravvive al login
     request.session.clear()
     request.session["user_id"] = user["id"]
     return RedirectResponse(safe_next(next_url), status_code=303)
 
+
 @router.post("/logout")
 def logout(request: Request):
-    request.session.clear()  # cancella i dati della sessione, l'utente risulta scollegato
+    request.session.clear()
     return RedirectResponse("/", status_code=303)

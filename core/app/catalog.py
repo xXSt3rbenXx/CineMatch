@@ -9,7 +9,6 @@ CATALOG_PATH = Path(__file__).resolve().parents[2] / "dataset" / "catalog" / "ca
 _catalog = None
 
 
-# Legge catalog.csv e lo tiene in memoria, indicizzato per id
 def load_catalog() -> None:
     global _catalog
     if not CATALOG_PATH.exists():
@@ -29,6 +28,7 @@ def get_movie(movie_id: int) -> dict | None:
     movie = _catalog.loc[movie_id].to_dict()
     movie["genres"] = movie["genres"].split("|")  # da "Crime|Comedy" a ["Crime", "Comedy"]
     return movie
+
 
 # Cerca i film il cui titolo contiene il testo cercato, senza distinguere le maiuscole.
 # I risultati sono ordinati dal più votato, così i film più noti compaiono per primi.

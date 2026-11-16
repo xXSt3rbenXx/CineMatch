@@ -1,15 +1,17 @@
 import sqlite3
 from pathlib import Path
 
-# Il database sarà il file core/data/cinematch.db (i file *.db sono già ignorati da git)
+# core/data/cinematch.db (i file .db sono ignorati da git)
 DB_PATH = Path(__file__).resolve().parent.parent / "data" / "cinematch.db"
 
+
 def get_connection() -> sqlite3.Connection:
-    DB_PATH.parent.mkdir(exist_ok=True)  # crea la cartella data/ se non esiste
+    DB_PATH.parent.mkdir(exist_ok=True)
     conn = sqlite3.connect(DB_PATH)  # se il file non esiste SQLite lo crea
     conn.row_factory = sqlite3.Row  # permette di leggere le colonne per nome
     conn.execute("PRAGMA foreign_keys = ON")  # SQLite non controlla le chiavi esterne se non attivo
     return conn
+
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
@@ -27,11 +29,12 @@ CREATE TABLE IF NOT EXISTS watchlists (
 );
 """
 
-# Crea le tabelle se non esistono già
+
 def init_db() -> None:
     conn = get_connection()
     conn.executescript(SCHEMA)
     conn.close()
+
 
 # Inserisce un nuovo utente; restituisce il suo id, oppure None se lo username esiste già
 def create_user(username: str, password_hash: str) -> int | None:
@@ -41,7 +44,7 @@ def create_user(username: str, password_hash: str) -> int | None:
             "INSERT INTO users (username, password_hash) VALUES (?, ?)",
             (username, password_hash),
         )
-        conn.commit()  # senza commit la modifica non viene salvata
+        conn.commit()
         return cursor.lastrowid
     except sqlite3.IntegrityError:
         # lo username è UNIQUE: il database rifiuta i duplicati
@@ -49,7 +52,7 @@ def create_user(username: str, password_hash: str) -> int | None:
     finally:
         conn.close()
 
-# Cerca un utente per id; restituisce la riga oppure None
+
 def get_user_by_id(user_id: int) -> sqlite3.Row | None:
     conn = get_connection()
     try:
@@ -60,7 +63,7 @@ def get_user_by_id(user_id: int) -> sqlite3.Row | None:
     finally:
         conn.close()
 
-# Cerca un utente per username; restituisce la riga oppure None
+
 def get_user_by_username(username: str) -> sqlite3.Row | None:
     conn = get_connection()
     try:
@@ -70,6 +73,7 @@ def get_user_by_username(username: str) -> sqlite3.Row | None:
         ).fetchone()
     finally:
         conn.close()
+
 
 # Aggiunge un film alla watchlist dell'utente (se c'è già, non fa nulla)
 def add_to_watchlist(user_id: int, movie_id: int) -> None:
@@ -83,7 +87,7 @@ def add_to_watchlist(user_id: int, movie_id: int) -> None:
     finally:
         conn.close()
 
-# Toglie un film dalla watchlist dell'utente (se non c'è, non fa nulla)
+
 def remove_from_watchlist(user_id: int, movie_id: int) -> None:
     conn = get_connection()
     try:
@@ -95,7 +99,8 @@ def remove_from_watchlist(user_id: int, movie_id: int) -> None:
     finally:
         conn.close()
 
-# Restituisce gli id dei film salvati dall'utente, dal più recente al più vecchio
+
+# Solo gli id, dal più recente
 def get_watchlist_ids(user_id: int) -> list[int]:
     conn = get_connection()
     try:
@@ -106,6 +111,7 @@ def get_watchlist_ids(user_id: int) -> list[int]:
         return [row["movie_id"] for row in rows]
     finally:
         conn.close()
+
 
 # Segna un film della watchlist come visto (True) o da vedere (False)
 def set_watched(user_id: int, movie_id: int, watched: bool) -> None:
@@ -118,6 +124,7 @@ def set_watched(user_id: int, movie_id: int, watched: bool) -> None:
         conn.commit()
     finally:
         conn.close()
+
 
 # Film salvati dall'utente con il loro stato (visto o no), dal più recente al più vecchio
 def get_watchlist(user_id: int) -> list[sqlite3.Row]:
