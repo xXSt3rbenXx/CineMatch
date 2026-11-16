@@ -25,8 +25,8 @@ def login(client, username=USERNAME, password=PASSWORD):
 def test_register_ok(client):
     response = register(client)
     assert response.status_code == 303
-    # il pulsante "Logout" compare solo se l'utente è loggato
-    assert "Logout" in client.get("/").text
+    # il pulsante "Log out" compare solo se l'utente è loggato
+    assert "Log out" in client.get("/").text
 
 
 # Lo stesso username con maiuscole diverse conta come duplicato
@@ -57,7 +57,7 @@ def test_login_ok(client):
     client.post("/logout")
     response = login(client, username="MARIO")
     assert response.status_code == 303
-    assert "Logout" in client.get("/").text
+    assert "Log out" in client.get("/").text
 
 
 # Password sbagliata: errore 401 e messaggio generico
@@ -98,3 +98,10 @@ def test_login_blocks_external_next_url(client):
         follow_redirects=False,
     )
     assert response.headers["location"] == "/"
+
+
+# Username più lungo di 14 caratteri: rifiutato
+def test_register_username_too_long(client):
+    response = client.post("/register", data={"username": "a" * 15, "password": "password123"})
+    assert response.status_code == 400
+    assert "3 to 14 characters" in response.text

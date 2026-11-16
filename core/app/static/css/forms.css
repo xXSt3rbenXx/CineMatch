@@ -82,6 +82,28 @@ option::checkmark {
   display: none;
 }
 
+/* ---------- Pulsante principale ---------- */
+
+/* Pulsante pieno arancio con testo blu notte, come "Remove" nella finestra di conferma */
+.button-primary {
+  margin-top: 0.5rem;
+  padding: 0.65rem 1rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  color: var(--bg);
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+
+@media (hover: hover) {
+  .button-primary:hover {
+    filter: brightness(1.1);
+  }
+}
+
 /* ---------- Ricerca con suggerimenti ---------- */
 
 .search-label {

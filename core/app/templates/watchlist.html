@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block header_title %}<span class="page-title">{{ get_current_user(request)["username"] }}'s Watchlist</span>{% endblock %}
+{% block header_title %}<span class="page-title"><span class="page-owner"><span class="page-user">{{ get_current_user(request)["username"] }}</span>'s</span> Watchlist</span>{% endblock %}
 
 {% block content %}
 

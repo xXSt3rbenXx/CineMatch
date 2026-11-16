@@ -7,13 +7,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ title }}</title>
+
   {# L'ordine conta: dal più generale al più specifico #}
   <link rel="stylesheet" href="/static/css/base.css">
   <link rel="stylesheet" href="/static/css/forms.css">
   <link rel="stylesheet" href="/static/css/card.css">
   <link rel="stylesheet" href="/static/css/dialogs.css">
   <link rel="stylesheet" href="/static/css/watchlist.css">
+  <link rel="stylesheet" href="/static/css/auth.css">
   <link rel="icon" type="image/png" href="/static/img/icona.png">
+
   {# Script in quest'ordine: cards.js usa ui.js, search.js usa removeCard() di cards.js #}
   <script src="/static/js/ui.js" defer></script>
   <script src="/static/js/cards.js" defer></script>
@@ -40,13 +43,12 @@
           </summary>
           
           <div class="profile-dropdown">
-            <p class="profile-name">{{ user["username"] }}'s menu:</p>
             <ul class="profile-items">
               <li><a href="/watchlist">My Watchlist</a></li>
               <li>
                 {# Il logout resta un POST (come da documento), ma ha l'aspetto di una voce del menu #}
                 <form method="post" action="/logout">
-                  <button type="submit">Logout</button>
+                  <button type="submit">Log out</button>
                 </form>
               </li>
             </ul>
@@ -54,8 +56,8 @@
         </details>
 
       {% else %}
-        <a href="/login">Log in</a>
-        <a href="/register">Register</a>
+        <a href="/login" class="nav-link">Log in</a>
+        <a href="/register" class="nav-button">Register</a>
       {% endif %}
     </nav>
   </header>
@@ -85,8 +87,10 @@
 
   {# Citazione richiesta dalle regole di TMDB, che ci fornisce le locandine #}
   <footer>
-    <p>Posters provided by <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDB</a>.
-      This website uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.</p>
+    <a href="https://www.themoviedb.org" target="_blank" rel="noopener" class="tmdb-logo">
+      <img src="/static/img/tmdb-logo.svg" alt="TMDB">
+    </a>
+    <p>This website uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.</p>
   </footer>
 
 </body>

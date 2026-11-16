@@ -1,0 +1,84 @@
+/* Login e registrazione: riquadro centrato, nello stile delle schede */
+
+.auth-box {
+  max-width: 380px;
+  margin: 2rem auto;
+  padding: 2rem 1.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.auth-symbol {
+  display: block;
+  height: 48px;
+  margin: 0 auto 0.75rem;
+}
+
+.auth-box h2 {
+  margin: 0 0 1.5rem;
+  font-size: 1.4rem;
+  text-align: center;
+}
+
+/* Il form generico è largo al massimo 320px: qui occupa tutto il riquadro */
+.auth-form {
+  max-width: none;
+  gap: 0.4rem;
+}
+
+.auth-form label {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* Più spazio sotto il campo che sopra: l'etichetta resta attaccata al suo campo */
+.auth-form input {
+  margin-bottom: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  font: inherit;
+}
+
+.auth-switch {
+  margin: 1.5rem 0 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.auth-switch a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-switch a:hover {
+  text-decoration: underline;
+}
+
+/* Riga di aiuto sotto un campo: il campo sopra perde il suo margine, così la riga gli resta attaccata */
+.auth-form input:has(+ .field-help) {
+  margin-bottom: 0;
+}
+
+.field-help {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  text-align: center;
+  color: color-mix(in srgb, var(--text-muted), var(--text));
+}
+
+/* Bordo rosso su un campo sbagliato, solo dopo che l'utente ci ha scritto (non appena si apre la pagina) */
+.auth-form input:user-invalid {
+  border-color: var(--error);
+}
+
+/* ---------- Schermi piccoli ---------- */
+
+@media (max-width: 600px) {
+  .auth-box {
+    margin: 1rem auto;
+    padding: 1.5rem 1.25rem;
+  }
+}

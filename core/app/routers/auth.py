@@ -23,8 +23,8 @@ def register(request: Request, username: str = Form(...), password: str = Form(.
 
     # Controlli lato server (quelli del browser si possono aggirare)
     error = None
-    if not re.fullmatch(r"[A-Za-z0-9_.-]{3,30}", username):
-        error = "Username must be 3 to 30 characters long and can only contain letters, numbers, underscores ( _ ), dots ( . ) and hyphens ( - )."
+    if not re.fullmatch(r"[A-Za-z0-9_.-]{3,14}", username):
+        error = "Invalid username: use 3 to 14 characters (letters, numbers, _ . -)."
     elif len(password) < 8:
         error = "Password must be at least 8 characters."
     elif len(password.encode("utf-8")) > 72:

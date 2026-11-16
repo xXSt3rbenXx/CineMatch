@@ -18,7 +18,13 @@
 
 /* ---------- Regole generali ---------- */
 
+/* Pagina a colonna alta almeno quanto lo schermo: 
+main prende lo spazio libero e spinge il footer in fondo */
 body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
   font-family: system-ui, sans-serif;
   background: var(--bg);
@@ -26,6 +32,7 @@ body {
 }
 
 main {
+  flex: 1;
   padding: 2rem;
 }
 
@@ -38,8 +45,15 @@ button {
   cursor: pointer;
 }
 
+/* Errore nei form */
 .error {
-  color: var(--error);
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.8rem;
+  border-left: 3px solid var(--error);
+  border-radius: var(--radius);
+  background: rgba(255, 107, 107, 0.1);
+  font-size: 0.9rem;
+  color: var(--text);
 }
 
 /* Toglie il riquadro blu che i browser mobili mostrano al tocco */
@@ -81,6 +95,7 @@ header {
   align-items: center;
   padding: 1rem 2rem;
   background: var(--surface);
+  gap: 1rem;
 }
 
 header h1 {
@@ -112,6 +127,19 @@ header h1 a {
   color: var(--text-muted);
 }
 
+/* Il nome utente si taglia con i puntini se è troppo lungo */
+.page-user {
+  display: inline-block;
+  max-width: 25ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+
+.page-owner {
+  white-space: nowrap;
+}
+
 nav {
   display: flex;
   align-items: center;
@@ -120,6 +148,36 @@ nav {
 
 nav form {
   max-width: none;
+}
+
+/* Da non loggati: "Log in" link semplice, "Register" pillola */
+.nav-link {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.nav-button {
+  padding: 0.35rem 0.9rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+@media (hover: hover) {
+  .nav-link:hover {
+    color: var(--accent);
+  }
+
+  .nav-button:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
 }
 
 /* ---------- Menu del profilo ---------- */
@@ -161,12 +219,6 @@ nav form {
   border-radius: var(--radius);
 }
 
-.profile-name {
-  margin: 0 0 0.4rem;
-  font-size: 0.9rem;
-  color: var(--text-muted);
-}
-
 .profile-items {
   margin: 0;
   padding-left: 1.1rem;
@@ -202,11 +254,26 @@ nav form {
 /* ---------- Footer ---------- */
 
 footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
   margin-top: 3rem;
-  padding: 1rem 2rem;
+  padding: 1.5rem 2rem;
   border-top: 1px solid var(--border);
   font-size: 0.8rem;
   color: var(--text-muted);
+  text-align: center;
+}
+
+footer p {
+  margin: 0;
+}
+
+/* Le regole di TMDB chiedono che il loro logo sia meno in evidenza del nostro */
+.tmdb-logo img {
+  display: block;
+  height: 14px;
 }
 
 footer a {
@@ -235,4 +302,10 @@ footer a {
   .page-title {
     font-size: 0.95rem;
   }
+
+  /* Su telefono lo spazio non basta per 14 caratteri larghi: i nomi molto larghi si tagliano */
+  .page-user {
+    max-width: 14ch;
+  }
+
 }

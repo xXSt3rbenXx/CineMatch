@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="11 11 84 98" width="84" height="98" role="img" aria-label="CineMatch">
+  <!-- Simbolo di CineMatch (la C col play), preso dal logo per sfondo scuro, senza sfondo -->
+  <path d="M 88.44 28.42 A 42.5 42.5 0 1 0 88.44 91.58" fill="none" stroke="#F4F1EA" stroke-width="11" stroke-linecap="round"/>
+  <path d="M 50 41 L 50 79 L 88 60 Z" fill="#F04A23" stroke="#F04A23" stroke-width="6" stroke-linejoin="round"/>
+</svg>
