@@ -69,7 +69,7 @@ def get_user_by_username(username: str) -> sqlite3.Row | None:
             (username,),
         ).fetchone()
     finally:
-        conn.close() 
+        conn.close()
 
 # Aggiunge un film alla watchlist dell'utente (se c'è già, non fa nulla)
 def add_to_watchlist(user_id: int, movie_id: int) -> None:
@@ -92,18 +92,6 @@ def remove_from_watchlist(user_id: int, movie_id: int) -> None:
             (user_id, movie_id),
         )
         conn.commit()
-    finally:
-        conn.close()
-
-# Dice se un film è già nella watchlist dell'utente
-def is_in_watchlist(user_id: int, movie_id: int) -> bool:
-    conn = get_connection()
-    try:
-        row = conn.execute(
-            "SELECT 1 FROM watchlists WHERE user_id = ? AND movie_id = ?",
-            (user_id, movie_id),
-        ).fetchone()
-        return row is not None
     finally:
         conn.close()
 
@@ -141,4 +129,3 @@ def get_watchlist(user_id: int) -> list[sqlite3.Row]:
         ).fetchall()
     finally:
         conn.close()
-

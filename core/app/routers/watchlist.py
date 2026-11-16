@@ -12,17 +12,21 @@ from app.watchlist_filters import (
 
 router = APIRouter()
 
-# Vero se la richiesta arriva dal JavaScript del cuore (che non vuole ricaricare la pagina)
+# Vero se la richiesta arriva dal JavaScript (cuore e ✓), che vuole JSON invece di un redirect
 def wants_json(request: Request) -> bool:
     return request.headers.get("X-Requested-With") == "fetch"
+
+# Risposta per chi non ha fatto login: 401 al JavaScript, altrimenti rimando alla pagina di login
+def login_required(request: Request):
+    if wants_json(request):
+        return JSONResponse({"error": "login required"}, status_code=401)
+    return RedirectResponse("/login", status_code=303)
 
 @router.post("/watchlist/add")
 def watchlist_add(request: Request, movie_id: int = Form(...), next_url: str = Form("/")):
     user = get_current_user(request)
     if user is None:
-        if wants_json(request):
-            return JSONResponse({"error": "login required"}, status_code=401)
-        return RedirectResponse("/login", status_code=303)
+        return login_required(request)
     if get_movie(movie_id) is not None:  # salviamo solo film che esistono nel catalogo
         add_to_watchlist(user["id"], movie_id)
     if wants_json(request):
@@ -33,9 +37,7 @@ def watchlist_add(request: Request, movie_id: int = Form(...), next_url: str = F
 def watchlist_remove(request: Request, movie_id: int = Form(...), next_url: str = Form("/")):
     user = get_current_user(request)
     if user is None:
-        if wants_json(request):
-            return JSONResponse({"error": "login required"}, status_code=401)
-        return RedirectResponse("/login", status_code=303)
+        return login_required(request)
     remove_from_watchlist(user["id"], movie_id)
     if wants_json(request):
         return {"saved": False}
@@ -51,9 +53,7 @@ def watchlist_watched(
 ):
     user = get_current_user(request)
     if user is None:
-        if wants_json(request):
-            return JSONResponse({"error": "login required"}, status_code=401)
-        return RedirectResponse("/login", status_code=303)
+        return login_required(request)
     set_watched(user["id"], movie_id, watched)
     if wants_json(request):
         return {"watched": watched}
