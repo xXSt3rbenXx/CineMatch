@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
@@ -115,6 +117,15 @@ def watchlist_page(
     # Film scelto dalla ricerca in cima alla pagina (?movie=id), per poterlo aggiungere
     selected = get_movie(movie) if movie is not None else None
 
+    # "Clear" toglie solo i filtri: l'ordinamento e il film scelto con la ricerca restano
+    keep = {}
+    if sort != "recent":
+        keep["sort"] = sort
+    if selected is not None:
+        keep["movie"] = selected["id"]
+    clear_url = "/watchlist?" + urlencode(keep) if keep else "/watchlist"
+
+
     return templates.TemplateResponse(
         request,
         "watchlist.html",
@@ -136,6 +147,7 @@ def watchlist_page(
             "total": total,
             "watched_count": watched_count,
             "filtered": filtered,
+            "clear_url": clear_url,
             "movie": selected,
             "movie_id": movie,
         },

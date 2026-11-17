@@ -1,3 +1,5 @@
+from app.catalog import normalize
+
 # Suggerimenti per "star": più film, al massimo 8, il più votato per primo
 def test_suggestions_star(client):
     response = client.get("/api/search", params={"q": "star"})
@@ -15,6 +17,32 @@ def test_suggestions_too_short(client):
 # Un testo che non corrisponde a nessun titolo dà una lista vuota
 def test_suggestions_no_match(client):
     assert client.get("/api/search", params={"q": "zzzz"}).json() == []
+
+
+# Prima i titoli che iniziano con il testo scritto: "st" dà Star Wars, non Interstellar
+def test_suggestions_title_start_first(client):
+    movies = client.get("/api/search", params={"q": "st"}).json()
+    assert movies[0]["title"] == "Star Wars"
+    assert "Interstellar" not in [m["title"] for m in movies]
+
+
+# L'articolo iniziale si può saltare
+def test_suggestions_skip_article(client):
+    movies = client.get("/api/search", params={"q": "godfather"}).json()
+    assert movies[0]["title"] == "The Godfather"
+
+
+# Trattini e accenti non contano
+def test_suggestions_ignore_punctuation_and_accents(client):
+    assert client.get("/api/search", params={"q": "spiderman"}).json()[0]["title"] == "Spider-Man"
+    assert client.get("/api/search", params={"q": "amelie"}).json()[0]["title"] == "Amélie"
+
+
+# Il testo pulito: minuscole, niente accenti, niente punteggiatura, spazi singoli
+def test_normalize():
+    assert normalize("Spider-Man") == "spiderman"
+    assert normalize("Amélie") == "amelie"
+    assert normalize("  The   Godfather: Part II ") == "the godfather part ii"
 
 
 # "What do you like?" con un film scelto mostra la sua scheda, senza cuore

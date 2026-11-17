@@ -53,6 +53,10 @@
         {% endfor %}
       </select>
 
+      {% if filtered %}
+        <a href="{{ clear_url }}" class="clear-filters" aria-label="Clear filters" title="Clear filters">{{ icon("close") }} Clear</a>
+      {% endif %}
+
       {# Il film scelto con la ricerca resta in pagina anche cambiando i filtri #}
       {% if movie %}<input type="hidden" name="movie" value="{{ movie.id }}">{% endif %}
 
@@ -93,7 +97,7 @@
       </div>
     </div>
   {% else %}
-    <p class="notice">No saved movies match these filters. <a href="/watchlist">Clear filters</a></p>
+    <p class="notice">No saved movies match these filters. <a href="{{ clear_url }}">Clear filters</a></p>
   {% endif %}
 
 {% endblock %}

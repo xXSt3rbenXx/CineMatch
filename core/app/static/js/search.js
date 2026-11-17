@@ -51,8 +51,8 @@ document.querySelectorAll(".search").forEach((box) => {
     // Nel frattempo l'utente ha cambiato testo: questa risposta è vecchia
     if (input.value.trim() !== query) return;
 
-    // Nessun risultato (o testo troppo corto): l'elenco sfuma via invece di sparire di colpo
-    if (!movies.length) {
+    // Testo troppo corto: il server non cerca sotto le 2 lettere, l'elenco sfuma via
+    if (query.length < 2) {
       closeSuggestions();
       return;
     }
@@ -63,6 +63,15 @@ document.querySelectorAll(".search").forEach((box) => {
 
     list.innerHTML = "";
     active = -1;
+
+    // Nessun film: una riga di avviso al posto dei suggerimenti (non è un link, le frecce la saltano)
+    if (!movies.length) {
+      const item = document.createElement("li");
+      item.className = "no-results";
+      item.textContent = "No movies found";
+      list.appendChild(item);
+      return;
+    }
 
     for (const movie of movies) {
       // Stessa pagina con ?movie=id: gli altri parametri (es. i filtri della watchlist) restano

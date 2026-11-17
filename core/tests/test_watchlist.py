@@ -187,6 +187,7 @@ def test_counter(client):
     assert '<span id="count-total">4</span>' in text
     assert '<span id="count-watched">2</span>' in text
     assert "count-shown" not in text
+    assert "clear-filters" not in text
 
 
 # Con un filtro conta i film mostrati, su quanti sono in tutto
@@ -208,3 +209,11 @@ def test_watchlist_selected_movie(client):
     assert "Interstellar" in response.text
     assert "Add to watchlist" in response.text
     assert "Mark as watched" not in response.text
+
+
+# "Clear" toglie i filtri ma tiene l'ordinamento
+def test_clear_filters_keeps_sort(client):
+    login_user(client)
+    save_test_movies(client)
+    text = client.get("/watchlist", params={"genre": "Animation", "sort": "rating"}).text
+    assert 'href="/watchlist?sort=rating" class="clear-filters"' in text

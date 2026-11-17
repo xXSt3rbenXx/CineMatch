@@ -219,3 +219,10 @@ option::checkmark {
 .suggestions a.active {
   background: var(--surface-hover);
 }
+
+/* Avviso "No movies found": stesse misure di un suggerimento, ma grigio e non cliccabile */
+.suggestions .no-results {
+  padding: 0.5rem;
+  color: var(--text-muted);
+  cursor: default;
+}

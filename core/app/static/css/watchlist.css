@@ -32,6 +32,39 @@
   border-color: var(--accent);
 }
 
+/* Toglie tutti i filtri: pillola come "Register", così si distingue dai menu (che sono rettangoli) */
+.clear-filters {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+@media (hover: hover) {
+  .clear-filters:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+}
+
+/* Col pulsante in più i filtri sono più larghi: vanno a capo prima (3 + 3).
+   Sotto i 480px no, lì c'è la griglia */
+@media (min-width: 481px) and (max-width: 950px) {
+  .filters:has(.clear-filters) .filters-break {
+    display: block;
+    flex-basis: 100%;
+    height: 0;
+  }
+}
+
 .watchlist-count {
   margin: 0 0 1.5rem;
   text-align: center;
@@ -110,5 +143,16 @@
   .filters select:last-of-type {
     grid-column: 1 / -1;
     justify-self: center;
+  }
+
+  /* Con "Clear" la durata non sta più da sola al centro: gli fa compagnia, 2 + 2 + 2 */
+  .filters:has(.clear-filters) select:last-of-type {
+    grid-column: auto;
+    justify-self: stretch;
+  }
+
+  .clear-filters {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.8rem;
   }
 }
