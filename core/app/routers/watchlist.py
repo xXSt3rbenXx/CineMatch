@@ -3,7 +3,8 @@ from urllib.parse import urlencode
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
-from app.catalog import get_movie
+from app import stats
+from app.catalog import catalog_numbers, get_movie, random_movie
 from app.database import add_to_watchlist, get_watchlist, remove_from_watchlist, set_watched
 from app.templating import get_current_user, templates, wants_json
 from app.security import safe_next
@@ -62,6 +63,15 @@ def watchlist_watched(
     return RedirectResponse(safe_next(next_url), status_code=303)
 
 
+# Film salvati da un utente, dal più recente, e id di quelli già visti (per il ✓ e le statistiche).
+# I film che non esistono più nel catalogo si saltano
+def saved_movies(user_id: int) -> tuple[list[dict], set[int]]:
+    rows = get_watchlist(user_id)
+    watched_ids = {row["movie_id"] for row in rows if row["watched"]}
+    movies = [m for m in (get_movie(row["movie_id"]) for row in rows) if m is not None]
+    return movies, watched_ids
+
+
 @router.get("/watchlist", response_class=HTMLResponse)
 def watchlist_page(
     request: Request,
@@ -77,14 +87,7 @@ def watchlist_page(
         # Dopo il login l'utente tornerà alla watchlist
         return RedirectResponse("/login?next_url=/watchlist", status_code=303)
 
-    rows = get_watchlist(user["id"])
-    ids = [row["movie_id"] for row in rows]
-
-    # Id dei film già visti, per disegnare il ✓ acceso o spento
-    watched_ids = {row["movie_id"] for row in rows if row["watched"]}
-
-    # Dati dei film salvati, saltando quelli che non esistono più nel catalogo
-    movies = [m for m in (get_movie(movie_id) for movie_id in ids) if m is not None]
+    movies, watched_ids = saved_movies(user["id"])
 
     # Numeri per il contatore: tutta la watchlist (con un filtro attivo, i visti si ricontano più sotto)
     total = len(movies)
@@ -140,7 +143,7 @@ def watchlist_page(
             "runtime_options": RUNTIME_OPTIONS,
             "sort": sort,
             "sort_options": SORT_OPTIONS,
-            "saved_ids": set(ids),
+            "saved_ids": {m["id"] for m in movies},
             "watched_ids": watched_ids,
             "status": status,
             "status_options": STATUS_OPTIONS,
@@ -150,5 +153,48 @@ def watchlist_page(
             "clear_url": clear_url,
             "movie": selected,
             "movie_id": movie,
+        },
+    )
+
+# Statistiche della watchlist: i calcoli sono in app/stats.py, qui si raccolgono per la pagina
+@router.get("/stats", response_class=HTMLResponse)
+def stats_page(request: Request, skip: int | None = None):
+    user = get_current_user(request)
+    if user is None:
+        return RedirectResponse("/login?next_url=/stats", status_code=303)
+
+    movies, watched_ids = saved_movies(user["id"])
+    numbers = catalog_numbers()
+    watch_next = stats.watch_next(movies, watched_ids)
+
+    # Generi e decenni stanno affiancati: se i decenni sono più di 5, mostriamo altrettanti generi,
+    # così le due sezioni finiscono alla stessa altezza
+    decades = stats.decades(movies)
+    genres = stats.top_genres(movies, limit=max(stats.TOP_GENRES, len(decades)))
+
+    # Tutto visto: un film a caso tra quelli non salvati. skip è il film mostrato prima di
+    # cliccare "Show another": escluso anche lui, il nuovo è sempre diverso
+    random_pick = None
+    if movies and watch_next is None:
+        exclude = {m["id"] for m in movies}
+        if skip is not None:
+            exclude.add(skip)
+        random_pick = random_movie(exclude)
+
+    return templates.TemplateResponse(
+        request,
+        "stats.html",
+        {
+            "title": "My stats",
+            "overview": stats.overview(movies, watched_ids),
+            "genres": genres,
+            "decades": decades,
+            "taste": stats.taste(movies, numbers["sorted_votes"]),
+            "directors": stats.top_directors(movies),
+            "ratings": stats.ratings(movies, numbers["average_rating"]),
+            "records": stats.records(movies),
+            "watch_next": watch_next,
+            "random_movie": random_pick,
+            "saved_ids": {m["id"] for m in movies},  # per il cuore sulla scheda del film a caso
         },
     )

@@ -54,18 +54,24 @@ document.addEventListener("submit", async (event) => {
   const message = saved ? `"${title}" added to your watchlist` : `"${title}" removed from your watchlist`;
   const type = saved ? "success" : "";
 
-  // Scheda scelta con la ricerca della watchlist: sfuma e la pagina si ricarica (stessi filtri)
-  // per aggiornare la lista; il toast passa da sessionStorage e compare dopo
-  if (form.closest(".selected-movie[data-reload-on-save]")) {
+  // Schede il cui salvataggio cambia il resto della pagina (film scelto con la ricerca della watchlist,
+  // film a caso delle statistiche): sfumano e la pagina si ricarica per aggiornarsi.
+  // Il toast passa da sessionStorage e compare dopo il ricaricamento
+  if (form.closest("[data-reload-on-save]")) {
     sessionStorage.setItem("toast", message);
     sessionStorage.setItem("toastType", type);
     removeCard(card);
     const url = new URL(window.location.href);
-    url.searchParams.delete("movie");
-    setTimeout(() => window.location.replace(url.pathname + url.search), 500);
+    if (url.searchParams.has("movie")) {
+      // Watchlist: stessa pagina con gli stessi filtri, senza il film scelto in cima
+      url.searchParams.delete("movie");
+      setTimeout(() => window.location.replace(url.pathname + url.search), 500);
+    } else {
+      // Statistiche: stesso indirizzo, quindi serve reload (un cambio solo di #... non ricaricherebbe)
+      setTimeout(() => window.location.reload(), 500);
+    }
     return;
   }
-
   showToast(message, type);
 
   // Nella lista della watchlist la scheda tolta sparisce
@@ -144,7 +150,8 @@ document.addEventListener("click", (event) => {
     return;
   }
 
-  const poster = event.target.closest(".poster");
+  // .tile-poster: le locandine delle mini schede nella pagina delle statistiche
+  const poster = event.target.closest(".poster, .tile-poster");
   if (!poster || poster.src.endsWith("poster-placeholder.svg")) return;
 
   // Subito la versione già caricata (sfocata), poi quella HD appena arriva
@@ -163,3 +170,17 @@ document.addEventListener("click", (event) => {
   hd.onerror = () => image.classList.remove("loading");
   hd.src = `/api/poster/${poster.dataset.movieId}?size=original`;
 });
+
+
+// Arrivando dalle statistiche (/watchlist#movie-155): apre la scheda di quel film,
+// la porta in vista e accende il bordo per un attimo. Se il film non è nella lista, non fa niente
+const target = location.hash.match(/^#movie-(\d+)$/);
+if (target) {
+  const card = document.querySelector(`.watchlist-list .movie-card[data-movie-id="${target[1]}"]`);
+  if (card) {
+    card.open = true;
+    card.scrollIntoView({ behavior: "smooth", block: "center" });
+    card.classList.add("highlight");
+    setTimeout(() => card.classList.remove("highlight"), 1500);
+  }
+}

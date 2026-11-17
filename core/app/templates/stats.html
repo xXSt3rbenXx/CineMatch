@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% block header_title %}<span class="page-title"><span class="page-owner"><span class="page-user">{{ get_current_user(request)["username"] }}</span>'s</span> Stats</span>{% endblock %}
+
+{% block content %}
+
+  {# Grafico a barre orizzontali, usato da generi e decenni: le larghezze arrivano già calcolate da stats.py #}
+  {% macro bar_list(items) %}
+    <ul class="bar-list">
+      {% for item in items %}
+        <li>
+          <span class="bar-label">{{ item.label }}</span>
+          <span class="bar-track"><span class="bar-fill" style="width: {{ item.width }}%"></span></span>
+          <span class="bar-count">{{ item.count }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endmacro %}
+
+  {# Link a un film: apre la watchlist con la sua scheda già aperta (cards.js) #}
+  {% macro movie_link(movie) %}<a href="/watchlist#movie-{{ movie.id }}">{{ movie.title }}</a> ({{ movie.year }}){% endmacro %}
+
+  {# Mini scheda di un film citato (record, voti...): locandina, etichetta, titolo intero, anno e,
+     se c'è, un valore in una pillola. La locandina si apre a schermo intero (cards.js),
+     il resto della mini scheda porta alla watchlist #}
+  {% macro movie_tile(movie, label, icon_name=none, value=none) %}
+    <div class="movie-tile">
+      <img class="tile-poster" src="/api/poster/{{ movie.id }}" alt="Poster of {{ movie.title }}"
+           data-movie-id="{{ movie.id }}" loading="lazy"
+           onerror="this.onerror = null; this.src = '/static/img/poster-placeholder.svg'">
+      <a href="/watchlist#movie-{{ movie.id }}" class="tile-body">
+        <span class="tile-label">{{ label }}</span>
+        <span class="tile-title">{{ movie.title }}</span>
+        {# Riga in fondo: anno a sinistra, valore a destra #}
+        <span class="tile-footer">
+          <span class="tile-year">{{ movie.year }}</span>
+          {% if value is not none %}<span class="tile-value">{{ icon(icon_name) }} {{ value }}</span>{% endif %}
+        </span>
+      </a>
+    </div>
+  {% endmacro %} 
+
+  {% if not overview.saved %}
+    {# Senza film salvati non c'è niente da contare: stesso stile della watchlist vuota #}
+    <div class="empty-state">
+      <p class="empty-title">No stats yet</p>
+      <p class="empty-text">Save some movies to your watchlist and your stats will appear here.</p>
+      <div class="empty-actions">
+        <a href="/watchlist" class="pill-button">{{ icon("search") }} Go to your watchlist</a>
+        <a href="/similar" class="pill-button">{{ icon("clapper") }} What do you like?</a>
+        <a href="/feeling-lucky" class="pill-button">{{ icon("dice") }} Feeling lucky</a>
+      </div>
+    </div>
+  {% else %}
+    <div class="stats">
+
+      <section class="stats-section stats-wide">
+        <h2>Overview</h2>
+        <p class="stats-intro">Your watchlist at a glance.</p>
+        <div class="stats-tiles">
+          <p class="stats-tile"><span class="stats-number">{{ overview.saved }}</span> movies saved</p>
+          <p class="stats-tile"><span class="stats-number">{{ overview.watched }}</span> movies watched</p>
+          <p class="stats-tile"><span class="stats-number">{{ overview.minutes_watched|duration }}</span> time watched</p>
+          <p class="stats-tile"><span class="stats-number">{{ overview.minutes_to_watch|duration }}</span> time left</p>
+        </div>
+        {# Sopra la barra: percentuale a sinistra, serate che mancano a destra (2 ore di film a serata) #}
+        <div class="progress-head">
+          <span>{{ overview.percent }}% watched</span>
+          {% if overview.evenings %}
+            <span class="tile-value" title="At 2 hours of movies per evening">{{ icon("moon") }} About {{ overview.evenings }} {{ "evening" if overview.evenings == 1 else "evenings" }} to go</span>
+          {% else %}
+            <span class="tile-value">{{ icon("check") }} All watched!</span>
+          {% endif %}
+        </div>
+        <div class="progress" role="progressbar" aria-label="Watched" aria-valuenow="{{ overview.percent }}" aria-valuemin="0" aria-valuemax="100">
+          <span class="progress-fill" style="width: {{ overview.percent }}%"></span>
+        </div>
+      </section>
+
+      <section class="stats-section">
+        <h2>Genres</h2>
+        <p class="stats-intro">The genres you save the most.</p>
+        {{ bar_list(genres) }}
+      </section>
+
+      <section class="stats-section">
+        <h2>Decades</h2>
+        <p class="stats-intro">When your movies came out.</p>
+        {{ bar_list(decades) }}
+      </section>
+
+      <section class="stats-section stats-wide">
+        <h2>Your taste</h2>
+        <p class="stats-intro">Big hits or hidden gems? Based on how many people rated your movies on TMDB.</p>
+        {# Il segno sta più a destra quanto meno sono famosi i film salvati #}
+        <div class="taste-scale">
+          <span>Mainstream</span>
+          <span class="taste-track"><span class="taste-marker" style="left: {{ taste.niche }}%"></span></span>
+          <span>Niche</span>
+        </div>
+        <p class="stats-verdict">
+          {% if taste.verdict == "mainstream" %}You love the big hits
+          {% elif taste.verdict == "mixed" %}A mix of big hits and lesser-known movies
+          {% else %}You dig for hidden gems{% endif %}
+        </p>
+        <p class="stats-note">On average, your movies have more votes than {{ taste.popularity }}% of the movies in CineMatch.</p>
+        <div class="movie-tiles">
+          {{ movie_tile(taste.most_known, "Your most popular movie", "user", "{:,}".format(taste.most_known.vote_count) ~ " votes") }}
+          {{ movie_tile(taste.hidden_gem, "Your hidden gem" if taste.gem_popularity < 50 else "Your least-known movie", "user", "{:,}".format(taste.hidden_gem.vote_count) ~ " votes") }}
+        </div>
+      </section>
+
+      <section class="stats-section">
+        <h2>Directors</h2>
+        <p class="stats-intro">The directors behind your list.</p>
+        {% if directors %}
+          <ol class="directors">
+            {% for director in directors %}
+              <li>
+                <span class="director-name">{{ director.name }}</span>
+                <span class="director-count">{{ director.count }} {{ "movie" if director.count == 1 else "movies" }}</span>
+                <span class="director-best">Best: {{ movie_link(director.best) }}</span>
+              </li>
+            {% endfor %}
+          </ol>
+        {% else %}
+          {# Succede solo se nessun film salvato ha il regista nel catalogo #}
+          <div class="stats-empty">
+            <p class="stats-note">No director info for your movies yet.</p>
+            <a href="/watchlist#search" class="pill-button">{{ icon("search") }} Add more movies</a>
+          </div>
+        {% endif %}
+      </section>
+
+      <section class="stats-section">
+        <h2>Ratings</h2>
+        <p class="stats-intro">How your movies score on TMDB, against the whole catalog.</p>
+        {# Due barre sulla stessa scala da 0 a 10: si confrontano a colpo d'occhio #}
+        <ul class="bar-list">
+          <li>
+            <span class="bar-label">Your movies</span>
+            <span class="bar-track"><span class="bar-fill" style="width: {{ ratings.yours_width }}%"></span></span>
+            <span class="bar-count">★ {{ ratings.yours }}</span>
+          </li>
+          <li>
+            <span class="bar-label">All movies</span>
+            <span class="bar-track"><span class="bar-fill bar-muted" style="width: {{ ratings.catalog_width }}%"></span></span>
+            <span class="bar-count">★ {{ ratings.catalog }}</span>
+          </li>
+        </ul>
+
+        <p class="stats-verdict">
+          {% if ratings.verdict == "higher" %}Above-average picks
+          {% elif ratings.verdict == "lower" %}Below-average picks
+          {% else %}Right on the average{% endif %}
+        </p>
+
+        <div class="movie-tiles movie-tiles-stacked">
+          {{ movie_tile(ratings.top_rated, "Your top rated", "star", ratings.top_rated.vote_average) }}
+          {{ movie_tile(ratings.lowest_rated, "Your lowest rated", "star", ratings.lowest_rated.vote_average) }}
+        </div>
+      </section>
+
+      <section class="stats-section stats-wide">
+        <h2>Records</h2>
+        <p class="stats-intro">The extremes of your list.</p>
+        <div class="movie-tiles">
+          {{ movie_tile(records.longest, "Longest", "clock", records.longest.runtime|duration) }}
+          {{ movie_tile(records.shortest, "Shortest", "clock", records.shortest.runtime|duration) }}
+          {{ movie_tile(records.newest, "Newest") }}
+          {{ movie_tile(records.oldest, "Oldest") }}
+        </div>
+      </section>
+
+      <section class="stats-section stats-wide" id="watch-next">
+        <h2>Watch next</h2>
+        {% if watch_next %}
+          <p class="stats-intro">From the movies you haven't seen yet.</p>
+          <div class="movie-tiles">
+            {{ movie_tile(watch_next.best_rated, "Best rated", "star", watch_next.best_rated.vote_average) }}
+            {# Solo se c'è un film breve diverso dal best rated #}
+            {% if watch_next.quick_one %}
+              {{ movie_tile(watch_next.quick_one, "Quick one for tonight", "clock", watch_next.quick_one.runtime|duration) }}
+            {% endif %}
+          </div>
+        {% elif random_movie %}
+          {# Tutto visto: un film a caso dal catalogo, con il cuore per salvarlo #}
+          <p class="stats-intro">You've watched everything on your list! How about a random one?</p>
+          <div class="random-movie" data-reload-on-save>
+            {% with movie = random_movie %}{% include "partials/movie_card.html" %}{% endwith %}
+          </div>
+          {# skip: il prossimo film sarà diverso da questo; #watch-next riporta a questa sezione #}
+          <a href="/stats?skip={{ random_movie.id }}#watch-next" class="pill-button">{{ icon("dice") }} Show another</a>
+        {% else %}
+          <p class="stats-intro">You've saved and watched every movie in CineMatch. Impressive!</p>
+        {% endif %}
+      </section>
+
+    </div>
+
+  {% endif %}
+
+{% endblock %}

@@ -65,14 +65,69 @@
   }
 }
 
-.watchlist-count {
-  margin: 0 0 1.5rem;
+/* ---------- Le due zone: aggiungi un film, la tua lista ---------- */
+
+/* Titolo di zona ("Add a movie", "Your movies"): stesso stile dei titoli delle statistiche, centrato */
+.zone-title {
+  display: block;
+  margin: 0 auto 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
   text-align: center;
-  color: var(--text-muted);
-  /* Cambiando filtro, la frase si trasforma nella nuova invece di sostituirla di colpo */
+}
+
+/* Linea sottile sopra (come il footer): divide la ricerca dalla lista */
+.list-head {
+  margin: 0.5rem 0 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Contatore sotto i filtri, centrato; è un link alle statistiche */
+.watchlist-count {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  width: fit-content;
+  margin: 0 auto 1.25rem;
+  color: var(--text);
+  text-decoration: none;
+  /* Cambiando filtro, le pillole si trasformano nelle nuove invece di cambiare di colpo */
   view-transition-name: watchlist-count;
 }
 
+/* Stesse pillole delle statistiche */
+.count-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+.count-pill .icon {
+  color: var(--text-muted);
+}
+
+@media (hover: hover) {
+    .watchlist-count:hover .count-pill {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  /* Anche le icone diventano scure, sul fondo arancio */
+  .watchlist-count:hover .count-pill .icon {
+    color: var(--bg);
+  }
+}
 
 /* ---------- Watchlist vuota ---------- */
 

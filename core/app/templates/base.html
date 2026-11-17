@@ -16,8 +16,10 @@
   <link rel="stylesheet" href="/static/css/watchlist.css">
   <link rel="stylesheet" href="/static/css/auth.css">
   <link rel="stylesheet" href="/static/css/home.css">
+  <link rel="stylesheet" href="/static/css/stats.css">
 
-  <link rel="icon" type="image/png" href="/static/img/icona.png">
+  {# Icona della scheda: cerchio scuro con il simbolo, il resto è trasparente #}
+  <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
 
   {# Script in quest'ordine: cards.js usa ui.js, search.js usa removeCard() di cards.js #}
   <script src="/static/js/ui.js" defer></script>
@@ -53,6 +55,7 @@
           <div class="profile-dropdown">
             <ul class="profile-items">
               <li><a href="/watchlist">My Watchlist</a></li>
+              <li><a href="/stats">My Stats</a></li>
               <li>
                 {# Il logout resta un POST (come da documento), ma ha l'aspetto di una voce del menu #}
                 <form method="post" action="/logout">

@@ -6,7 +6,8 @@
    - saved_ids: id dei film salvati dall'utente, oppure None se non ha fatto login (niente cuore)
    - watched_ids (facoltativa): id dei film già visti; se c'è, compare anche il ✓ #}
 
-<details class="movie-card">
+{# data-movie-id: serve a cards.js per aprire la scheda arrivando da /watchlist#movie-id #}
+<details class="movie-card" data-movie-id="{{ movie.id }}">
   <summary>
     <span class="card-head">
       <strong class="card-title">{{ movie.title }}</strong>

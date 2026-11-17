@@ -30,6 +30,23 @@ def load_catalog() -> None:
         "compact": words.str.replace(" ", ""),             # "thegodfatherpartii"
         "no_article": words.str.replace(r"^(the|a|an) ", "", regex=True).str.replace(" ", ""),
     })
+  
+
+# Numeri di tutto il catalogo, per confrontare i gusti dell'utente nella pagina delle statistiche.
+# Calcolati dal catalogo caricato, così valgono anche se un giorno il catalogo cambia
+def catalog_numbers() -> dict:
+    return {
+        "average_rating": float(_catalog["vote_average"].mean()),
+        "sorted_votes": sorted(_catalog["vote_count"]),  # voti di tutti i film, dal meno votato
+    }
+
+
+# Un film a caso del catalogo, escludendo gli id dati (es. quelli già in watchlist); None se non ne resta nessuno
+def random_movie(exclude_ids: set[int]) -> dict | None:
+    candidates = _catalog[~_catalog["id"].isin(exclude_ids)]
+    if candidates.empty:
+        return None
+    return get_movie(int(candidates["id"].sample().iloc[0]))
 
 
 # Restituisce i dati di un film come dizionario, oppure None se l'id non è nel catalogo

@@ -4,6 +4,7 @@ from fastapi import Request
 from fastapi.templating import Jinja2Templates
 
 from app.database import get_user_by_id
+from app.stats import duration
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -31,3 +32,7 @@ def wants_json(request: Request) -> bool:
 
 # Rende la funzione usabile dentro i template
 templates.env.globals["get_current_user"] = get_current_user
+
+
+# Filtro per scrivere le durate nei template: {{ 290|duration }} -> "4 h 50 min"
+templates.env.filters["duration"] = duration

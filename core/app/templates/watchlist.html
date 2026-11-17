@@ -4,7 +4,7 @@
 {% block content %}
 
   {# Ricerca: per aggiungere un film di cui si conosce il titolo #}
-  <label for="search" class="search-label">Add a movie to your watchlist</label>
+  <label for="search" class="search-label zone-title">Add a movie to your watchlist</label>
   {% include "partials/search.html" %}
   {% if movie %}
     <div class="selected-movie" data-reload-on-save>{% include "partials/movie_card.html" %}</div>
@@ -12,8 +12,13 @@
     <p class="notice">Movie not found.</p>
   {% endif %}
 
-  {# Ogni scelta ricarica la pagina con i filtri nell'indirizzo (?genre=...&decade=...) #}
   {% if total %}
+    {# Seconda zona della pagina, la lista: una linea la separa dalla ricerca #}
+    <div class="list-head">
+      <h2 class="zone-title">Your movies</h2>
+    </div>
+
+    {# Ogni scelta ricarica la pagina con i filtri nell'indirizzo (?genre=...&decade=...) #}
     <form method="get" action="/watchlist" class="filters">
 
       <select id="sort" name="sort" class="{{ 'active' if sort != 'recent' }}" aria-label="Sort by" onchange="this.form.submit()">
@@ -63,17 +68,17 @@
       {# Senza JavaScript il filtro si applica con questo pulsante #}
       <noscript><button type="submit">Filter</button></noscript>
     </form>
-  {% endif %}
 
-  {# Contatore: gli span con id servono al JavaScript per aggiornare i numeri senza ricaricare #}
-  {% if total %}
-    <p class="watchlist-count">
-      {% if filtered %}
-        Showing <span id="count-shown">{{ movies|length }}</span> of <span id="count-total">{{ total }}</span> movies{% if not status %} · <span id="count-watched">{{ watched_count }}</span> watched{% endif %}
-      {% else %}
-        <span id="count-total">{{ total }}</span> movies · <span id="count-watched">{{ watched_count }}</span> watched
+    {# Contatore sotto i filtri: quanti film ci sono qui sotto. Porta alle statistiche.
+       Gli span con id servono al JavaScript per aggiornare i numeri senza ricaricare #}
+    <a href="/stats" class="watchlist-count" title="See your stats">
+      <span class="count-pill">{{ icon("clapper") }} {% if filtered %}<span id="count-shown">{{ movies|length }}</span> of {% endif %}<span id="count-total">{{ total }}</span> movies</span>
+      {# Con il filtro "visti / da vedere" il numero dei visti non direbbe niente di nuovo #}
+      {% if not status %}
+        <span class="count-pill">{{ icon("check") }} <span id="count-watched">{{ watched_count }}</span> watched</span>
       {% endif %}
-    </p>
+    </a>
+
   {% endif %}
 
   {% if movies %}

@@ -19,6 +19,12 @@
   transition: opacity 0.5s, transform 0.5s;
 }
 
+/* Scheda appena aperta da un link delle statistiche: il bordo si accende per un attimo */
+.movie-card.highlight {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
 /* Da tastiera il contorno va attorno a tutta la scheda, non solo alla parte alta */
 .movie-card summary:focus-visible {
   outline: none;
@@ -185,7 +191,8 @@
   display: flex;
   align-items: stretch;
   gap: 1.25rem;
-  padding: 0 1rem 1rem;
+  /* 0.5rem sopra: la locandina che si solleva al passaggio non viene tagliata dal bordo dell'animazione */
+  padding: 0.5rem 1rem 1rem;
 }
 
 /* flex-start: la locandina non si deforma se la sinossi è più alta di lei */

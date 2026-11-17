@@ -217,3 +217,59 @@ def test_clear_filters_keeps_sort(client):
     save_test_movies(client)
     text = client.get("/watchlist", params={"genre": "Animation", "sort": "rating"}).text
     assert 'href="/watchlist?sort=rating" class="clear-filters"' in text
+
+    
+# Da non loggato le statistiche portano al login, che poi riporta qui
+def test_stats_requires_login(client):
+    response = client.get("/stats", follow_redirects=False)
+    assert response.status_code == 303
+    assert response.headers["location"] == "/login?next_url=/stats"
+
+
+# Watchlist vuota: un messaggio invece dei numeri
+def test_stats_empty(client):
+    login_user(client)
+    text = client.get("/stats").text
+    assert "No stats yet" in text
+    assert "Overview" not in text
+
+
+# Con 4 film salvati e 1 visto (Shrek) le sezioni ci sono e i numeri tornano
+def test_stats_page(client):
+    login_user(client)
+    save_test_movies(client)
+    set_watched(client, 808, 1)
+    text = client.get("/stats").text
+    assert '<span class="stats-number">4</span> movies saved' in text
+    assert '<span class="stats-number">1</span> movies watched' in text
+    for section in ["Overview", "Genres", "Decades", "Your taste", "Ratings", "Records", "Watch next"]:
+        assert f"<h2>{section}</h2>" in text
+
+
+
+# Basta un film perché la pagina mostri tutte le sezioni
+def test_stats_one_movie(client):
+    login_user(client)
+    client.post("/watchlist/add", data={"movie_id": 11}, headers=FETCH)
+    text = client.get("/stats").text
+    for section in ["Overview", "Genres", "Decades", "Your taste", "Directors", "Ratings", "Records", "Watch next"]:
+        assert f"<h2>{section}</h2>" in text
+
+
+# Tutto visto: Watch next mostra un film a caso che non è nella watchlist, e il pulsante per cambiarlo
+def test_stats_random_movie_when_all_watched(client):
+    login_user(client)
+    client.post("/watchlist/add", data={"movie_id": 11}, headers=FETCH)
+    set_watched(client, 11, 1)
+    text = client.get("/stats").text
+    assert "How about a random one?" in text
+    assert "Show another" in text
+    assert "/stats?skip=11#" not in text  # il film a caso non è Star Wars, che è già salvato
+
+
+# I film nelle statistiche portano alla loro scheda nella watchlist, che si riconosce dall'id del film
+def test_stats_links_open_watchlist_card(client):
+    login_user(client)
+    client.post("/watchlist/add", data={"movie_id": 11}, headers=FETCH)
+    assert 'href="/watchlist#movie-11"' in client.get("/stats").text
+    assert 'class="movie-card" data-movie-id="11"' in client.get("/watchlist").text
