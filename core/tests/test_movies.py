@@ -19,6 +19,18 @@ def test_suggestions_no_match(client):
     assert client.get("/api/search", params={"q": "zzzz"}).json() == []
 
 
+# Errori di battitura: se la ricerca normale non trova niente, si cercano i titoli più somiglianti
+def test_suggestions_typo(client):
+    assert client.get("/api/search", params={"q": "imception"}).json()[0]["title"] == "Inception"
+    assert client.get("/api/search", params={"q": "godfater"}).json()[0]["title"] == "The Godfather"
+
+
+# Un errore di battitura non cambia i risultati quando la ricerca normale trova già qualcosa
+def test_suggestions_typo_only_as_fallback(client):
+    titles = [m["title"] for m in client.get("/api/search", params={"q": "inception"}).json()]
+    assert titles == ["Inception"]
+
+
 # Prima i titoli che iniziano con il testo scritto: "st" dà Star Wars, non Interstellar
 def test_suggestions_title_start_first(client):
     movies = client.get("/api/search", params={"q": "st"}).json()

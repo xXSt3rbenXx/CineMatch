@@ -91,22 +91,33 @@
       <section class="stats-section stats-wide">
         <h2>Your taste</h2>
         <p class="stats-intro">Big hits or hidden gems? Based on how many people rated your movies on TMDB.</p>
+        
         {# Il segno sta più a destra quanto meno sono famosi i film salvati #}
         <div class="taste-scale">
           <span>Mainstream</span>
           <span class="taste-track"><span class="taste-marker" style="left: {{ taste.niche }}%"></span></span>
           <span>Niche</span>
         </div>
+        
         <p class="stats-verdict">
           {% if taste.verdict == "mainstream" %}You love the big hits
           {% elif taste.verdict == "mixed" %}A mix of big hits and lesser-known movies
           {% else %}You dig for hidden gems{% endif %}
         </p>
+        
         <p class="stats-note">On average, your movies have more votes than {{ taste.popularity }}% of the movies in CineMatch.</p>
-        <div class="movie-tiles">
+        
+        {# Dal più votato al meno votato, una sotto l'altra; gemma e meno conosciuto solo se ci sono e sono diversi #}
+        <div class="movie-tiles movie-tiles-stacked">
           {{ movie_tile(taste.most_known, "Your most popular movie", "user", taste.most_known.vote_count|votes) }}
-          {{ movie_tile(taste.hidden_gem, "Your hidden gem" if taste.gem_popularity < 50 else "Your least-known movie", "user", taste.hidden_gem.vote_count|votes) }}
+          {% if taste.hidden_gem %}
+            {{ movie_tile(taste.hidden_gem, "Your hidden gem", "user", taste.hidden_gem.vote_count|votes) }}
+          {% endif %}
+          {% if taste.least_known %}
+            {{ movie_tile(taste.least_known, "Your least-known movie", "user", taste.least_known.vote_count|votes) }}
+          {% endif %}
         </div>
+
       </section>
 
       <section class="stats-section">

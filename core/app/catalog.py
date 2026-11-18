@@ -1,8 +1,10 @@
 import re
 import unicodedata
+import pandas as pd
+
+from difflib import SequenceMatcher
 from pathlib import Path
 
-import pandas as pd
 from app.stats import MIN_VOTES
 
 
@@ -12,6 +14,10 @@ CATALOG_PATH = Path(__file__).resolve().parents[2] / "dataset" / "catalog" / "ca
 # Il catalogo resta in memoria: viene caricato una volta sola, all'avvio
 _catalog = None
 _search = None  # i titoli in versione "pulita", per la ricerca (vedi normalize)
+
+# Correzione degli errori di battitura nella ricerca (vedi similar_titles)
+TYPO_MIN_LETTERS = 4     # sotto queste lettere niente correzione: le parole corte somigliano a tutto
+TYPO_SIMILARITY = 0.75   # quanto deve somigliare l'inizio del titolo: circa un errore ogni 4 lettere
 
 
 def load_catalog() -> None:
@@ -88,4 +94,33 @@ def search_movies(query: str, limit: int = 20) -> list[dict]:
     rank = pd.Series(3, index=_catalog.index).mask(word_starts, 2).mask(starts, 1)
     found = _catalog.assign(rank=rank)[starts | word_starts | inside]
     found = found.sort_values(["rank", "vote_count"], ascending=[True, False]).head(limit)
+
+    # Nessun risultato: forse c'è un errore di battitura
+    if found.empty and len(compact) >= TYPO_MIN_LETTERS:
+        return similar_titles(compact, limit)
     return [get_movie(movie_id) for movie_id in found["id"]]
+
+
+# Ripiego per gli errori di battitura ("imception" trova "Inception"), usato solo quando la ricerca normale
+# non trova niente. Il testo scritto si confronta con l'inizio di ogni titolo, della stessa lunghezza
+# (con e senza "The", "A", "An"), così funziona anche a parola non finita.
+# Prima i titoli più somiglianti, poi i più votati
+def similar_titles(compact: str, limit: int) -> list[dict]:
+    matcher = SequenceMatcher()
+    matcher.set_seq2(compact)
+    length = len(compact)
+    found = []
+    for movie_id, votes, no_article, full in zip(
+        _catalog["id"], _catalog["vote_count"], _search["no_article"], _search["compact"]
+    ):
+        best = 0
+        for start in (no_article[:length], full[:length]):
+            matcher.set_seq1(start)
+            # quick_ratio è una stima veloce che non sbaglia per difetto: se è già sotto la soglia,
+            # il calcolo vero (più lento) si salta. Così la ricerca resta sotto i 30 ms
+            if matcher.quick_ratio() >= TYPO_SIMILARITY:
+                best = max(best, matcher.ratio())
+        if best >= TYPO_SIMILARITY:
+            found.append((-best, -votes, movie_id))
+    found.sort()
+    return [get_movie(movie_id) for _, _, movie_id in found[:limit]]

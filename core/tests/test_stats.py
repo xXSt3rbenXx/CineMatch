@@ -78,15 +78,16 @@ def test_popularity():
     assert popularity(5000, CATALOG_VOTES) == 100
 
 
-# Popolarità dei 4 film: 40, 60, 80, 20 -> media 50, "un po' e un po'"; il meno votato è il 4
+# Popolarità dei 4 film: 40, 60, 80, 20 -> media 50, "un po' e un po'".
+# Il meno votato è D, ed è anche la gemma (voto 7.0, sopra la media): compare una volta sola, come gemma
 def test_taste():
-    result = taste(MOVIES, CATALOG_VOTES)
+    result = taste(MOVIES, CATALOG_VOTES, 6.1)
     assert result["popularity"] == 50
     assert result["niche"] == 50
     assert result["verdict"] == "mixed"
-    assert result["hidden_gem"]["title"] == "D"
     assert result["most_known"]["title"] == "C"
-    assert result["gem_popularity"] == 20
+    assert result["hidden_gem"]["title"] == "D"
+    assert result["least_known"] is None
 
 
 # Solo film molto votati: mainstream; solo film poco votati: nicchia
@@ -96,7 +97,7 @@ def test_taste_verdicts():
 
 
 def test_taste_empty():
-    assert taste([], CATALOG_VOTES) is None
+    assert taste([], CATALOG_VOTES, 6.1) is None
 
 
 # Media dei film salvati 7.6 contro 6.1 del catalogo: sopra la media
@@ -189,6 +190,28 @@ def test_duration():
     assert duration(180) == "3 h"
     assert duration(45) == "45 min"
     assert duration(0) == "0 min"
+
+
+# Il meno conosciuto è G (0 voti), ma la gemma è D: voto affidabile e sopra la media
+def test_hidden_gem_and_least_known():
+    result = taste(MOVIES + FEW_VOTES, CATALOG_VOTES, 6.1)
+    assert result["hidden_gem"]["title"] == "D"
+    assert result["least_known"]["title"] == "G"
+
+
+# Con la media del catalogo a 7.5 la gemma è A (D ha 7.0); a 9.0 nessun film è sopra la media: niente gemma
+def test_hidden_gem_needs_good_rating():
+    assert taste(MOVIES, CATALOG_VOTES, 7.5)["hidden_gem"]["title"] == "A"
+    result = taste(MOVIES, CATALOG_VOTES, 9.0)
+    assert result["hidden_gem"] is None
+    assert result["least_known"]["title"] == "D"
+
+
+# Un solo film, molto votato: non è una gemma "nascosta", e il più e il meno votato coincidono
+def test_taste_one_popular_movie():
+    result = taste([MOVIES[2]], CATALOG_VOTES, 6.1)
+    assert result["hidden_gem"] is None
+    assert result["least_known"] is None
 
 
 # Voti al singolare e al plurale, con il separatore delle migliaia

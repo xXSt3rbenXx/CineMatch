@@ -206,7 +206,7 @@ def stats_page(request: Request, skip: int | None = None):
             "overview": stats.overview(movies, watched_ids),
             "genres": genres,
             "decades": decades,
-            "taste": stats.taste(movies, numbers["sorted_votes"]),
+            "taste": stats.taste(movies, numbers["sorted_votes"], numbers["average_rating"]),
             "directors": stats.top_directors(movies),
             "ratings": stats.ratings(movies, numbers["average_rating"]),
             "records": stats.records(movies),

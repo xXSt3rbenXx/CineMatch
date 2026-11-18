@@ -95,7 +95,7 @@ def popularity(votes: int, catalog_votes: list[int]) -> int:
 
 
 # Nicchia o mainstream: la popolarità media dei film salvati, confrontata con tutto il catalogo
-def taste(movies: list[dict], catalog_votes: list[int]) -> dict | None:
+def taste(movies: list[dict], catalog_votes: list[int], catalog_average: float) -> dict | None:
     if not movies:
         return None
     average = round(sum(popularity(m["vote_count"], catalog_votes) for m in movies) / len(movies))
@@ -105,14 +105,31 @@ def taste(movies: list[dict], catalog_votes: list[int]) -> dict | None:
         verdict = "mixed"
     else:
         verdict = "niche"
-    gem = min(movies, key=lambda m: m["vote_count"])
+
+    most_known = max(movies, key=lambda m: m["vote_count"])
+    least_known = min(movies, key=lambda m: m["vote_count"])
+
+    # La gemma nascosta: il meno votato tra i film con un voto affidabile e almeno nella media del catalogo
+    # (un film con 0 voti non è una gemma, è un film di cui non si sa niente). Se è più votata di metà
+    # del catalogo non è "nascosta", e non c'è
+    good = [m for m in reliable(movies) if m["vote_average"] >= catalog_average]
+    gem = min(good, key=lambda m: m["vote_count"]) if good else None
+    if gem and popularity(gem["vote_count"], catalog_votes) >= MIXED:
+        gem = None
+
+    # Ogni film compare in una sola mini scheda: se due coincidono, resta la prima
+    if gem and gem["id"] == most_known["id"]:
+        gem = None
+    if least_known["id"] in (most_known["id"], gem and gem["id"]):
+        least_known = None
+
     return {
         "popularity": average,
         "niche": 100 - average,  # posizione del segno sulla scala, da Mainstream (0) a Niche (100)
         "verdict": verdict,
-        "hidden_gem": gem,
-        "most_known": max(movies, key=lambda m: m["vote_count"]),
-        "gem_popularity": popularity(gem["vote_count"], catalog_votes),
+        "most_known": most_known,
+        "hidden_gem": gem,  # None se non c'è
+        "least_known": least_known,  # None se coincide con una delle altre due
     }
 
 
