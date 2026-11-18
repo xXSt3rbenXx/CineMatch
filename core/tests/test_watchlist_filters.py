@@ -62,6 +62,11 @@ def test_sort_votes():
     assert ids(sort_movies(MOVIES, "votes")) == [3, 2, 1, 4]
 
 
+# Voto dal più basso
+def test_sort_lowest():
+    assert ids(sort_movies(MOVIES, "lowest")) == [2, 4, 3, 1]
+
+
 def test_sort_newest_and_oldest():
     assert ids(sort_movies(MOVIES, "newest")) == [3, 2, 4, 1]
     assert ids(sort_movies(MOVIES, "oldest")) == [1, 4, 2, 3]

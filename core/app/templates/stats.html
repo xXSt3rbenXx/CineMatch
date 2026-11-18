@@ -104,8 +104,8 @@
         </p>
         <p class="stats-note">On average, your movies have more votes than {{ taste.popularity }}% of the movies in CineMatch.</p>
         <div class="movie-tiles">
-          {{ movie_tile(taste.most_known, "Your most popular movie", "user", "{:,}".format(taste.most_known.vote_count) ~ " votes") }}
-          {{ movie_tile(taste.hidden_gem, "Your hidden gem" if taste.gem_popularity < 50 else "Your least-known movie", "user", "{:,}".format(taste.hidden_gem.vote_count) ~ " votes") }}
+          {{ movie_tile(taste.most_known, "Your most popular movie", "user", taste.most_known.vote_count|votes) }}
+          {{ movie_tile(taste.hidden_gem, "Your hidden gem" if taste.gem_popularity < 50 else "Your least-known movie", "user", taste.hidden_gem.vote_count|votes) }}
         </div>
       </section>
 

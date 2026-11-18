@@ -65,3 +65,10 @@ def test_feeling_lucky_placeholder(client):
     response = client.get("/feeling-lucky")
     assert response.status_code == 200
     assert "Coming soon" in response.text
+
+
+# Un film senza voti non mostra 0.0/10; con un voto solo, "vote" al singolare
+def test_card_votes(client):
+    assert "No votes yet" in client.get("/similar", params={"movie": 43743}).text  # Fabled, 0 voti
+    text = client.get("/similar", params={"movie": 89861}).text  # Stiff Upper Lips, 1 voto
+    assert "1 vote<" in text and "/10" in text

@@ -13,6 +13,7 @@ CLOSE_RATING = 0.3       # entro questa differenza dal catalogo, il voto medio �
 MAINSTREAM = 80          # popolarità media da qui in su: "big hits"
 MIXED = 50               # da qui a MAINSTREAM: un po' e un po'; sotto: "hidden gems"
 QUICK_MINUTES = 100      # durata massima del "Quick one for tonight"
+MIN_VOTES = 50           # sotto questi voti il voto TMDB non è affidabile (es. 10 con 1 voto, 0 senza voti)
 
 
 # Barre di un grafico: la più lunga è piena (100%), le altre in proporzione
@@ -31,6 +32,11 @@ def duration(minutes: int) -> str:
     if hours:
         return f"{hours} h"
     return f"{minutes} min"
+
+
+# Numero di voti leggibile: 1 -> "1 vote", 13752 -> "13,752 votes"
+def votes(count: int) -> str:
+    return f"{count:,} {'vote' if count == 1 else 'votes'}"
 
 
 # Numeri principali: film salvati e visti, ore viste e da vedere, serate per finire la lista
@@ -62,20 +68,24 @@ def decades(movies: list[dict]) -> list[dict]:
     return bars([(f"{decade}s", counts[decade]) for decade in sorted(counts)])
 
 
+# I film con un voto affidabile, cioè con almeno MIN_VOTES voti: servono per scegliere il film
+# col voto più alto o più basso, così un 10 con 1 voto non diventa il "top" e uno 0 senza voti il "lowest".
+# Se nessun film ne ha abbastanza li teniamo tutti, così la scelta non resta vuota
+def reliable(movies: list[dict]) -> list[dict]:
+    return [m for m in movies if m["vote_count"] >= MIN_VOTES] or movies
+
+
 # I registi più presenti nella lista: prima chi ha più film, a parità chi ha il film col voto più alto.
 # Così la classifica è piena anche quando ogni regista compare una volta sola (il regista mancante non conta)
 def top_directors(movies: list[dict]) -> list[dict]:
-    counts = Counter()
-    best = {}  # regista -> il suo film col voto più alto
+    films = {}  # regista -> i suoi film
     for m in movies:
-        name = m["director"]
-        if not name:
-            continue
-        counts[name] += 1
-        if name not in best or m["vote_average"] > best[name]["vote_average"]:
-            best[name] = m
-    ordered = sorted(counts, key=lambda name: (-counts[name], -best[name]["vote_average"], name))
-    return [{"name": name, "count": counts[name], "best": best[name]} for name in ordered[:TOP_DIRECTORS]]
+        if m["director"]:
+            films.setdefault(m["director"], []).append(m)
+    # Il film col voto più alto di ogni regista, tra quelli con un voto affidabile
+    best = {name: max(reliable(group), key=lambda m: m["vote_average"]) for name, group in films.items()}
+    ordered = sorted(films, key=lambda name: (-len(films[name]), -best[name]["vote_average"], name))
+    return [{"name": name, "count": len(films[name]), "best": best[name]} for name in ordered[:TOP_DIRECTORS]]
 
 
 # Popolarità di un film: la percentuale di film del catalogo con meno voti (64 = più votato del 64%).
@@ -106,10 +116,13 @@ def taste(movies: list[dict], catalog_votes: list[int]) -> dict | None:
     }
 
 
-# Voto medio dei film salvati, confrontato con quello di tutto il catalogo
+# Voto medio dei film salvati, confrontato con quello di tutto il catalogo.
+# Contano solo i film con un voto affidabile: un film senza voti (0.0) abbasserebbe la media senza motivo
 def ratings(movies: list[dict], catalog_average: float) -> dict:
-    average = sum(m["vote_average"] for m in movies) / len(movies) if movies else 0
+    rated = reliable(movies)
+    average = sum(m["vote_average"] for m in rated) / len(rated) if movies else 0
     difference = average - catalog_average
+
     if difference >= CLOSE_RATING:
         verdict = "higher"
     elif difference <= -CLOSE_RATING:
@@ -123,8 +136,9 @@ def ratings(movies: list[dict], catalog_average: float) -> dict:
         "yours_width": round(average * 10),
         "catalog_width": round(catalog_average * 10),
         "verdict": verdict,
-        "top_rated": max(movies, key=lambda m: m["vote_average"]) if movies else None,
-        "lowest_rated": min(movies, key=lambda m: m["vote_average"]) if movies else None,
+        # Il più alto e il più basso tra i film con un voto affidabile
+        "top_rated": max(rated, key=lambda m: m["vote_average"]) if movies else None,
+        "lowest_rated": min(rated, key=lambda m: m["vote_average"]) if movies else None,
     }
 
 
@@ -147,9 +161,9 @@ def watch_next(movies: list[dict], watched_ids: set[int]) -> dict | None:
     to_watch = [m for m in movies if m["id"] not in watched_ids]
     if not to_watch:
         return None
-    best = max(to_watch, key=lambda m: m["vote_average"])
+    best = max(reliable(to_watch), key=lambda m: m["vote_average"])
     quick = [m for m in to_watch if m["runtime"] <= QUICK_MINUTES and m is not best]
     return {
         "best_rated": best,
-        "quick_one": max(quick, key=lambda m: m["vote_average"]) if quick else None,
+        "quick_one": max(reliable(quick), key=lambda m: m["vote_average"]) if quick else None,
     }

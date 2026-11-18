@@ -4,7 +4,7 @@ from fastapi import Request
 from fastapi.templating import Jinja2Templates
 
 from app.database import get_user_by_id
-from app.stats import duration
+from app.stats import duration, votes
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -36,3 +36,4 @@ templates.env.globals["get_current_user"] = get_current_user
 
 # Filtro per scrivere le durate nei template: {{ 290|duration }} -> "4 h 50 min"
 templates.env.filters["duration"] = duration
+templates.env.filters["votes"] = votes  # {{ 1|votes }} -> "1 vote"

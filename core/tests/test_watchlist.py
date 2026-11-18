@@ -168,6 +168,55 @@ def test_filter_watched_status(client):
     to_watch = client.get("/watchlist", params={"status": "to_watch"}).text
     assert "Interstellar" in to_watch and "Shrek" not in to_watch
 
+# Filtro "Watched" senza nessun film visto: spiega come segnarne uno
+def test_filter_watched_none_yet(client):
+    login_user(client)
+    save_test_movies(client)
+    text = client.get("/watchlist", params={"status": "watched"}).text
+    assert "No watched movies yet" in text
+    assert "No saved movies match these filters" not in text
+
+
+# Filtro "To watch" con tutti i film visti
+def test_filter_to_watch_all_watched(client):
+    login_user(client)
+    save_test_movies(client)
+    for movie_id in TEST_MOVIES:
+        set_watched(client, movie_id, 1)
+    text = client.get("/watchlist", params={"status": "to_watch"}).text
+    assert "You've watched every movie on your list" in text
+
+
+# Con almeno un film visto, "Watched" più un genere senza visti dà il messaggio normale
+def test_filter_watched_with_genre_no_match(client):
+    login_user(client)
+    save_test_movies(client)
+    set_watched(client, 808, 1)  # Shrek: animazione
+    text = client.get("/watchlist", params={"status": "watched", "genre": "Drama"}).text
+    assert "No saved movies match these filters" in text
+
+# "Highest rated": i film con pochi voti (Stiff Upper Lips, 10 con 1 voto) vanno in fondo, in una sezione a parte
+def test_sort_rating_few_votes_section(client):
+    login_user(client)
+    save_test_movies(client)
+    client.post("/watchlist/add", data={"movie_id": 89861}, headers=FETCH)
+    text = client.get("/watchlist", params={"sort": "rating"}).text
+    assert in_order(text, ["12 Angry Men", "Not enough votes yet", "Stiff Upper Lips"])
+
+
+    # "Lowest rated": stessa sezione in fondo, e sopra si parte dal voto più basso
+    text = client.get("/watchlist", params={"sort": "lowest"}).text
+    assert in_order(text, ["Shrek", "12 Angry Men", "Not enough votes yet", "Stiff Upper Lips"])
+
+
+# Senza film poco votati, o con un altro ordinamento, la sezione non c'è
+def test_few_votes_section_only_when_needed(client):
+    login_user(client)
+    save_test_movies(client)
+    assert "Not enough votes yet" not in client.get("/watchlist", params={"sort": "rating"}).text
+    client.post("/watchlist/add", data={"movie_id": 89861}, headers=FETCH)
+    assert "Not enough votes yet" not in client.get("/watchlist").text
+
 
 # Il ✓ compare solo nella watchlist, non nella scheda della home
 def test_check_only_in_watchlist(client):

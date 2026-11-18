@@ -93,6 +93,10 @@ def watchlist_page(
     total = len(movies)
     watched_count = sum(1 for m in movies if m["id"] in watched_ids)
 
+    # Per i messaggi dei filtri "Watched" e "To watch" quando in tutta la lista non c'è niente da mostrare
+    none_watched = watched_count == 0
+    all_watched = watched_count == total
+
     # Voci dei menu, calcolate su tutta la watchlist (prima di filtrare)
     genres, decades = menu_options(movies)
 
@@ -117,6 +121,15 @@ def watchlist_page(
     if filtered:
         watched_count = sum(1 for m in movies if m["id"] in watched_ids)
 
+    # Con "Highest rated" e "Lowest rated" i film con pochi voti vanno in fondo, in una sezione a parte:
+    # il loro voto TMDB non è affidabile (es. 10 con 1 voto). Se lo sono tutti, stats.reliable li tiene tutti
+    few_votes = []
+    if sort in ("rating", "lowest"):
+        reliable = stats.reliable(movies)
+        reliable_ids = {m["id"] for m in reliable}
+        few_votes = [m for m in movies if m["id"] not in reliable_ids]
+        movies = reliable
+
     # Film scelto dalla ricerca in cima alla pagina (?movie=id), per poterlo aggiungere
     selected = get_movie(movie) if movie is not None else None
 
@@ -135,6 +148,8 @@ def watchlist_page(
         {
             "title": "My watchlist",
             "movies": movies,
+            "few_votes": few_votes,
+            "min_votes": stats.MIN_VOTES,
             "genres": genres,
             "genre": genre,
             "decades": decades,
@@ -143,12 +158,14 @@ def watchlist_page(
             "runtime_options": RUNTIME_OPTIONS,
             "sort": sort,
             "sort_options": SORT_OPTIONS,
-            "saved_ids": {m["id"] for m in movies},
+            "saved_ids": {m["id"] for m in movies + few_votes},
             "watched_ids": watched_ids,
             "status": status,
             "status_options": STATUS_OPTIONS,
             "total": total,
             "watched_count": watched_count,
+            "none_watched": none_watched,
+            "all_watched": all_watched,
             "filtered": filtered,
             "clear_url": clear_url,
             "movie": selected,

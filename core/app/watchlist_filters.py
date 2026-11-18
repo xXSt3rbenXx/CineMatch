@@ -3,6 +3,7 @@
 SORT_OPTIONS = {
     "recent": "Recently added",
     "rating": "Highest rated",
+    "lowest": "Lowest rated",
     "votes": "Most voted",
     "newest": "Newest releases",
     "oldest": "Oldest releases",
@@ -54,6 +55,8 @@ def apply_filters(movies, watched_ids, genre="", decade="", runtime="", status="
 def sort_movies(movies, sort):
     if sort == "rating":
         return sorted(movies, key=lambda m: m["vote_average"], reverse=True)
+    if sort == "lowest":
+        return sorted(movies, key=lambda m: m["vote_average"])
     if sort == "votes":
         return sorted(movies, key=lambda m: m["vote_count"], reverse=True)
     if sort == "newest":

@@ -1,4 +1,6 @@
-from app.stats import bars, decades, duration, overview, popularity, ratings, records, taste, top_directors, top_genres, watch_next
+from app.stats import (
+    bars, decades, duration, overview, popularity, ratings, records, taste, top_directors, top_genres, votes, watch_next,
+)
 
 # Film inventati: bastano i campi che usano le statistiche, niente catalogo né database
 MOVIES = [
@@ -60,7 +62,7 @@ def test_top_directors():
 
 # A parità di film conta il voto del film migliore, non l'ordine alfabetico
 def test_top_directors_tie():
-    allen = {"id": 5, "title": "E", "director": "Allen", "vote_average": 7.0}
+    allen = {"id": 5, "title": "E", "director": "Allen", "vote_average": 7.0, "vote_count": 300}
     result = top_directors([allen, MOVIES[2]])  # Allen 7.0, Nolan 8.3
     assert [d["name"] for d in result] == ["Nolan", "Allen"]
 
@@ -148,12 +150,52 @@ def test_watch_next_all_watched():
     assert watch_next(MOVIES, {1, 2, 3, 4}) is None
 
 
+# Film con pochi voti: il loro voto TMDB è falsato (9.5 con 3 voti, 0.0 senza voti)
+FEW_VOTES = [
+    {"id": 6, "title": "F", "genres": ["Drama"], "year": 2001, "runtime": 90,
+     "director": "Nolan", "vote_average": 9.5, "vote_count": 3},
+    {"id": 7, "title": "G", "genres": ["Drama"], "year": 2002, "runtime": 90,
+     "director": "Nolan", "vote_average": 0.0, "vote_count": 0},
+]
+
+
+# I film con pochi voti non diventano né il top né il lowest rated
+def test_ratings_ignore_few_votes():
+    result = ratings(MOVIES + FEW_VOTES, catalog_average=6.1)
+    assert result["yours"] == 7.6  # la media resta quella dei 4 film affidabili
+    assert result["top_rated"]["title"] == "A"
+    assert result["lowest_rated"]["title"] == "B"
+
+
+# Se tutti i film hanno pochi voti, si sceglie comunque tra tutti
+def test_ratings_only_few_votes():
+    result = ratings(FEW_VOTES, catalog_average=6.1)
+    assert result["top_rated"]["title"] == "F"
+    assert result["lowest_rated"]["title"] == "G"
+
+
+# Anche il best dei registi e i consigli di Watch next ignorano i film con pochi voti
+def test_best_ignores_few_votes():
+    nolan = top_directors(MOVIES + FEW_VOTES)[0]
+    assert (nolan["name"], nolan["count"], nolan["best"]["title"]) == ("Nolan", 4, "C")
+    result = watch_next(MOVIES + FEW_VOTES, {1, 3})
+    assert result["best_rated"]["title"] == "D"
+    assert result["quick_one"]["title"] == "B"
+
+
 # Durata leggibile: ore e minuti, solo le parti che servono
 def test_duration():
     assert duration(290) == "4 h 50 min"
     assert duration(180) == "3 h"
     assert duration(45) == "45 min"
     assert duration(0) == "0 min"
+
+
+# Voti al singolare e al plurale, con il separatore delle migliaia
+def test_votes():
+    assert votes(1) == "1 vote"
+    assert votes(0) == "0 votes"
+    assert votes(13752) == "13,752 votes"
 
 
 # Con un limite più alto si mostrano più generi (qui tutti e 3)

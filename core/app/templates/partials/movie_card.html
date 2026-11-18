@@ -82,8 +82,13 @@
       {% if movie.director %}
         <p class="info-row">{{ icon("director") }} <span>Directed by <strong>{{ movie.director }}</strong></span></p>
       {% endif %}
-      {# Es. 7.9/10 · 13,752 votes #}
-      <p class="info-row">{{ icon("star") }} <span><strong>{{ "%.1f" | format(movie.vote_average) }}</strong>/10 · {{ "{:,}".format(movie.vote_count) }} votes</span></p>
+
+      {# Es. 7.9/10 · 13,752 votes. Senza voti il voto 0.0 non vuol dire niente #}
+      {% if movie.vote_count %}
+        <p class="info-row">{{ icon("star") }} <span><strong>{{ "%.1f" | format(movie.vote_average) }}</strong>/10 · {{ movie.vote_count|votes }}</span></p>
+      {% else %}
+        <p class="info-row">{{ icon("star") }} <span>No votes yet</span></p>
+      {% endif %}
 
       <p class="overview">{{ movie.overview }}</p>
 

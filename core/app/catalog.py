@@ -3,6 +3,8 @@ import unicodedata
 from pathlib import Path
 
 import pandas as pd
+from app.stats import MIN_VOTES
+
 
 # Il file generato da scripts/build_catalog.py (si trova nella cartella principale del progetto)
 CATALOG_PATH = Path(__file__).resolve().parents[2] / "dataset" / "catalog" / "catalog.csv"
@@ -36,7 +38,8 @@ def load_catalog() -> None:
 # Calcolati dal catalogo caricato, così valgono anche se un giorno il catalogo cambia
 def catalog_numbers() -> dict:
     return {
-        "average_rating": float(_catalog["vote_average"].mean()),
+        # Solo i film con un voto affidabile, come per i film dell'utente (vedi stats.ratings)
+        "average_rating": float(_catalog.loc[_catalog["vote_count"] >= MIN_VOTES, "vote_average"].mean()),
         "sorted_votes": sorted(_catalog["vote_count"]),  # voti di tutti i film, dal meno votato
     }
 

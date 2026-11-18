@@ -72,13 +72,14 @@
     {# Contatore sotto i filtri: quanti film ci sono qui sotto. Porta alle statistiche.
        Gli span con id servono al JavaScript per aggiornare i numeri senza ricaricare #}
     <a href="/stats" class="watchlist-count" title="See your stats">
-      <span class="count-pill">{{ icon("clapper") }} {% if filtered %}<span id="count-shown">{{ movies|length }}</span> of {% endif %}<span id="count-total">{{ total }}</span> movies</span>
+      <span class="count-pill">{{ icon("clapper") }}
+        {% if filtered %}<span id="count-shown">{{ (movies + few_votes)|length }}</span> of {% endif %}
+        <span id="count-total">{{ total }}</span> movies</span>
       {# Con il filtro "visti / da vedere" il numero dei visti non direbbe niente di nuovo #}
       {% if not status %}
         <span class="count-pill">{{ icon("check") }} <span id="count-watched">{{ watched_count }}</span> watched</span>
       {% endif %}
     </a>
-
   {% endif %}
 
   {% if movies %}
@@ -88,6 +89,19 @@
         {% include "partials/movie_card.html" %}
       {% endfor %}
     </div>
+
+    {# "Highest rated" e "Lowest rated": i film con pochi voti in fondo, a parte, perché il loro voto TMDB non è affidabile #}
+    {% if few_votes %}
+      <div class="few-votes-head">
+        <h2 class="zone-title">Not enough votes yet</h2>
+        <p>Under {{ min_votes }} votes on TMDB</p>
+      </div>
+      <div class="watchlist-list" data-status="{{ status }}">
+        {% for movie in few_votes %}
+          {% include "partials/movie_card.html" %}
+        {% endfor %}
+      </div>
+    {% endif %}
 
   {% elif not genres %}
     {# Lista vuota: una frase corta e tre modi per trovare film da salvare #}
@@ -101,6 +115,19 @@
         <a href="/feeling-lucky" class="pill-button">{{ icon("dice") }} Feeling lucky</a>
       </div>
     </div>
+
+  {% elif status == "watched" and none_watched %}
+    {# Filtro "Watched" senza nessun film visto in tutta la lista: spieghiamo come segnarne uno #}
+    <div class="list-message">
+      <p>No watched movies yet. Press {{ icon("check") }} on a movie to mark it.</p>
+      <a href="{{ clear_url }}" class="pill-button">{{ icon("clapper") }} Show all movies</a>
+    </div>
+  {% elif status == "to_watch" and all_watched %}
+    <div class="list-message">
+      <p>You've watched every movie on your list!</p>
+      <a href="{{ clear_url }}" class="pill-button">{{ icon("clapper") }} Show all movies</a>
+    </div>
+
   {% else %}
     <p class="notice">No saved movies match these filters. <a href="{{ clear_url }}">Clear filters</a></p>
   {% endif %}

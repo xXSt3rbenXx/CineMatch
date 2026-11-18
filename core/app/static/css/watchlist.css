@@ -84,6 +84,39 @@
   border-top: 1px solid var(--border);
 }
 
+/* Lista senza risultati (filtri): una frase e un pulsante, come le sezioni vuote delle statistiche */
+.list-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 2.5rem 0;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.list-message p {
+  margin: 0;
+}
+
+/* "Highest rated" e "Lowest rated": titolo della sezione in fondo con i film poco votati, separata da una linea come la lista */
+.few-votes-head {
+  margin: 2rem 0 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.few-votes-head .zone-title {
+  margin-bottom: 0.25rem;
+}
+
+.few-votes-head p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
 /* Contatore sotto i filtri, centrato; è un link alle statistiche */
 .watchlist-count {
   display: flex;

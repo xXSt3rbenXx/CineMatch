@@ -32,6 +32,7 @@ document.addEventListener("submit", async (event) => {
 
   const card = form.closest(".movie-card");
   const title = card.querySelector(".card-title").textContent;
+  const id = card.dataset.movieId;
 
   // Per togliere un film chiediamo conferma, per aggiungerlo basta un clic
   const removing = form.action.endsWith("/watchlist/remove");
@@ -54,17 +55,27 @@ document.addEventListener("submit", async (event) => {
   const message = saved ? `"${title}" added to your watchlist` : `"${title}" removed from your watchlist`;
   const type = saved ? "success" : "";
 
-  // Schede il cui salvataggio cambia il resto della pagina (film scelto con la ricerca della watchlist,
-  // film a caso delle statistiche): sfumano e la pagina si ricarica per aggiornarsi.
+  // Schede il cui salvataggio cambia il resto della pagina (film scelto con la ricerca della watchlist o film a caso delle statistiche)
   // Il toast passa da sessionStorage e compare dopo il ricaricamento
-  if (form.closest("[data-reload-on-save]")) {
+  // Vale anche se il film tolto dalla lista è lo stesso scelto con la ricerca in cima: 
+  // la pagina si ricarica senza la scheda in cima, che altrimenti resterebbe col cuore pieno
+  if (form.closest("[data-reload-on-save]") || document.querySelector(`[data-reload-on-save] .movie-card[data-movie-id="${id}"]`)) {
     sessionStorage.setItem("toast", message);
     sessionStorage.setItem("toastType", type);
-    removeCard(card);
+
+    // Sfumano insieme tutte le copie del film (in cima e nella lista), poi la pagina si ricarica
+    document.querySelectorAll(`.movie-card[data-movie-id="${id}"]`).forEach((copy) => removeCard(copy));
     const url = new URL(window.location.href);
     if (url.searchParams.has("movie")) {
+
       // Watchlist: stessa pagina con gli stessi filtri, senza il film scelto in cima
       url.searchParams.delete("movie");
+
+      // Dopo il ricaricamento la scheda in cima non c'è più e tutto sale: per restare allo stesso punto
+      // salviamo dove si trova sullo schermo l'inizio della lista ("Your movies"), e lo rimettiamo lì
+      const head = document.querySelector(".list-head");
+      if (head) sessionStorage.setItem("listTop", head.getBoundingClientRect().top);
+
       setTimeout(() => window.location.replace(url.pathname + url.search), 500);
     } else {
       // Statistiche: stesso indirizzo, quindi serve reload (un cambio solo di #... non ricaricherebbe)
@@ -110,24 +121,32 @@ document.addEventListener("submit", async (event) => {
   if (!response.ok) return;
 
   const { watched } = await response.json();
-  const button = form.querySelector(".check");
-  form.elements.watched.value = watched ? "0" : "1";  // il prossimo clic farà il contrario
-  button.classList.toggle("watched", watched);
-  button.title = watched ? "Mark as not watched" : "Mark as watched";
-  button.setAttribute("aria-label", button.title);
+  const card = form.closest(".movie-card");
+  const id = card.dataset.movieId;
+
+  // Lo stesso film può comparire due volte (scelto con la ricerca in cima e nella lista): aggiorniamo ogni copia
+  document.querySelectorAll(`.movie-card[data-movie-id="${id}"] .check-form`).forEach((copy) => {
+    const button = copy.querySelector(".check");
+    copy.elements.watched.value = watched ? "0" : "1";  // il prossimo clic farà il contrario
+    button.classList.toggle("watched", watched);
+    button.title = watched ? "Mark as not watched" : "Mark as watched";
+    button.setAttribute("aria-label", button.title);
+  });
   bumpCount("count-watched", watched ? 1 : -1);
 
-  const title = form.closest(".movie-card").querySelector(".card-title").textContent;
+  const title = card.querySelector(".card-title").textContent;
   if (watched) showToast(`"${title}" marked as watched`, "success");
   else showToast(`"${title}" marked as not watched`);
 
-  // Con il filtro "Watched" o "To watch" attivo, la scheda che non corrisponde più sparisce
-  const list = form.closest(".watchlist-list");
-  const status = list ? list.dataset.status : "";
-  if ((status === "watched" && !watched) || (status === "to_watch" && watched)) {
-    bumpCount("count-shown", -1);
-    removeCard(form.closest(".movie-card"), list);
-  }
+  // Con il filtro "Watched" o "To watch" attivo, la scheda della lista che non corrisponde più sparisce
+  document.querySelectorAll(`.watchlist-list .movie-card[data-movie-id="${id}"]`).forEach((copy) => {
+    const list = copy.closest(".watchlist-list");
+    const status = list.dataset.status;
+    if ((status === "watched" && !watched) || (status === "to_watch" && watched)) {
+      bumpCount("count-shown", -1);
+      removeCard(copy, list);
+    }
+  });
 });
 
 // "Close" in fondo alla scheda aperta
@@ -171,6 +190,13 @@ document.addEventListener("click", (event) => {
   hd.src = `/api/poster/${poster.dataset.movieId}?size=original`;
 });
 
+// Dopo il ricaricamento chiesto dal cuore della scheda in cima: l'inizio della lista torna dov'era sullo schermo
+const listTop = sessionStorage.getItem("listTop");
+if (listTop !== null) {
+  sessionStorage.removeItem("listTop");
+  const head = document.querySelector(".list-head");
+  if (head) window.scrollTo(0, head.getBoundingClientRect().top + window.scrollY - Number(listTop));
+}
 
 // Arrivando dalle statistiche (/watchlist#movie-155): apre la scheda di quel film,
 // la porta in vista e accende il bordo per un attimo. Se il film non è nella lista, non fa niente
