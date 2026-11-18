@@ -17,6 +17,8 @@ Riferimento unico per le parti in comune. Chi cambia qualcosa qui avvisa gli alt
 - Il Core usa un timeout di **1 s per la connessione e 2 s per la lettura** verso l'AI. Per l'AI non c'è Circuit Breaker: c'è solo sulle locandine TMDB.
 - Obiettivo di prestazioni: risposta entro **300 ms**, da misurare sul prototipo.
 
+> **Nota:** le route dell'AI possono essere normali `def` (sincrone). Il calcolo con NumPy è lavoro di CPU: dentro un `async def` bloccherebbe l'unico thread che gestisce le richieste, e il servizio non risponderebbe a nessun altro (nemmeno a `/health`) finché il calcolo non finisce. Con `def`, FastAPI esegue ogni richiesta in un thread a parte. Il Core invece usa un client asincrono, perché aspetta l'AI e TMDB: le due scelte sono indipendenti e non cambiano il contratto.
+
 ## 2. `GET /health`
 
 ```json
