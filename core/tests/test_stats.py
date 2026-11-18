@@ -92,8 +92,8 @@ def test_taste():
 
 # Solo film molto votati: mainstream; solo film poco votati: nicchia
 def test_taste_verdicts():
-    assert taste([MOVIES[2]], CATALOG_VOTES)["verdict"] == "mainstream"
-    assert taste([MOVIES[3]], CATALOG_VOTES)["verdict"] == "niche"
+    assert taste([MOVIES[2]], CATALOG_VOTES, 6.1)["verdict"] == "mainstream"
+    assert taste([MOVIES[3]], CATALOG_VOTES, 6.1)["verdict"] == "niche"
 
 
 def test_taste_empty():
