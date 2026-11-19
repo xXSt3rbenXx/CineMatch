@@ -204,7 +204,8 @@ Le keywords sono state verificate sul catalogo: ognuna compare in almeno 10 film
 - `GET /health` e `POST /recommend` come sopra;
 - le due strategie nel Registry;
 - le frasi dei toni, scelte e provate;
-- il Dockerfile.
+- il Dockerfile;
+- i test con pytest (vedi sotto).
 
 **Core**:
 - il client verso l'AI, con i timeout;
@@ -215,6 +216,16 @@ Le keywords sono state verificate sul catalogo: ognuna compare in almeno 10 film
   - la percentuale di somiglianza;
   - il messaggio sui filtri allentati;
   - il messaggio "AI non disponibile".
+
+### Test dell'AI Service
+Come per il Core, i test si lanciano con `pytest` e devono passare prima di ogni push. Coprono almeno:
+- **il contratto**, con il `TestClient` di FastAPI: formato di `/health` e di `/recommend` (nomi e tipi dei campi), 404 per un film inesistente, 422 per un input non valido (tono sconosciuto, più di 2 generi, anni invertiti, `limit` fuori da 1–100);
+- **`similar`**: il film scelto e gli `exclude_ids` non compaiono mai, i risultati sono al massimo `limit`, la stessa richiesta dà sempre la stessa risposta;
+- **`quiz`**: i filtri (generi in OR, anni e durata compresi), l'ordine per tono e poi per voti e id, l'allentamento nell'ordine giusto (durata, anni, generi) con `relaxed_filters` e `applied` corretti, il risultato mai vuoto.
+
+Per non caricare il modello vero a ogni test conviene usare un mini catalogo e degli embedding finti, scritti a mano. `build_catalog.py` fa già così: accetta un codificatore da sostituire nei test.
+
+Questo elenco è il minimo indispensabile: ogni nuova funzione, correzione o caso particolare scoperto durante lo sviluppo va accompagnato dal suo test, così chi modifica il codice in seguito si accorge subito se rompe qualcosa.
 
 ## 8. Miglioramenti possibili
 
